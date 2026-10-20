@@ -1,4 +1,4 @@
-# ROADSTER CLICKER 🚗🍪
+# ROADSTER CLICKER
 
 Un **cookie clicker** en el que, en lugar de una galleta, pulsas un **Tesla Roadster**.
 
