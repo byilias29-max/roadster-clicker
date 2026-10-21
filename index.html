@@ -74,7 +74,7 @@ header{display:flex;align-items:center;gap:14px;flex:0 0 auto}
   background:radial-gradient(circle at 34% 30%,#ffe3a8,#c98a00 70%);
   box-shadow:0 0 8px #ffd24a88}
 .iconbtn{width:42px;height:42px;border-radius:12px;background:var(--glass);border:1px solid var(--line);
-  color:var(--ink);font-size:18px;cursor:pointer;backdrop-filter:blur(8px);flex:0 0 auto}
+  color:var(--ink);font-size:18px;backdrop-filter:blur(8px);flex:0 0 auto}
 .iconbtn:active{transform:scale(.92)}
 
 /* ---------- layout ---------- */
@@ -92,16 +92,16 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
     radial-gradient(ellipse 60% 42% at 50% 88%,rgba(232,33,39,.20),transparent 70%),
     radial-gradient(ellipse 70% 55% at 50% 100%,rgba(76,201,240,.10),transparent 70%)}
 /* El fondo que se desliza en diagonal hacia abajo-izquierda.
-   Las rayas van a 45° y el desplazamiento es exactamente un periodo del
-   patrón, así que el bucle no da ningún salto. */
-#bgmove{position:absolute;left:-40px;top:-40px;right:-40px;bottom:-40px;z-index:0;pointer-events:none;
-  background-image:
-    repeating-linear-gradient(45deg,  rgba(232,33,39,.16) 0 1px, transparent 1px 40px),
-    repeating-linear-gradient(45deg,  rgba(76,201,240,.10) 0 1px, transparent 1px 20px);
-  animation:drift 10s linear infinite;will-change:transform}
+   Cuadrados de esquinas redondeadas en damasco: los grises marcados y los
+   negros flojos. El patrón es periódico y el desplazamiento es exactamente
+   un periodo, así que el bucle no da ningún salto. */
+#bgmove{position:absolute;left:-60px;top:-60px;right:-60px;bottom:-60px;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect x='4' y='4' width='32' height='32' rx='9' fill='%23a7b3c9' fill-opacity='.26'/%3E%3Crect x='44' y='4' width='32' height='32' rx='9' fill='%23000' fill-opacity='.55'/%3E%3Crect x='4' y='44' width='32' height='32' rx='9' fill='%23000' fill-opacity='.55'/%3E%3Crect x='44' y='44' width='32' height='32' rx='9' fill='%23a7b3c9' fill-opacity='.26'/%3E%3C/svg%3E");
+  background-size:80px 80px;
+  animation:drift 12s linear infinite;will-change:transform}
 @keyframes drift{
   from{transform:translate3d(0,0,0)}
-  to{transform:translate3d(-28.2843px,28.2843px,0)}}
+  to{transform:translate3d(-40px,40px,0)}}
 #floaters{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:2}
 #carHit{z-index:1}
 #cursors{z-index:3}
@@ -109,11 +109,10 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 @keyframes shk{0%,100%{transform:translate(0,0)}25%{transform:translate(-4px,3px)}50%{transform:translate(4px,-3px)}75%{transform:translate(-2px,-2px)}}
 #arena.shake svg{animation:shk .22s}
 
-#carHit{position:relative;cursor:pointer;display:block;width:min(560px,92%);touch-action:manipulation;
+#carHit{position:relative;display:block;width:min(560px,92%);touch-action:manipulation;
   filter:drop-shadow(0 26px 26px #000a)}
 #carHit:focus-visible{outline:3px solid var(--cyan);outline-offset:10px;border-radius:20px}
 #carHit svg{width:100%;height:auto;display:block;overflow:visible}
-#carHit:active{cursor:pointer}
 #carHit.boost{animation:boost .3s cubic-bezier(.2,.9,.3,1)}
 @keyframes boost{0%{transform:translateX(0) scale(1)}30%{transform:translateX(16px) scale(1.02,.98)}100%{transform:translateX(0) scale(1)}}
 #carHit.squash #carGroup{animation:sq .22s ease-out}
@@ -131,7 +130,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 .flt.small{font-size:15px;color:var(--lime);text-shadow:0 0 12px #8ef5b077}
 
 /* cookie dorada */
-#golden{position:absolute;width:66px;height:66px;border-radius:50%;cursor:pointer;z-index:4;
+#golden{position:absolute;width:66px;height:66px;border-radius:50%;z-index:4;
   display:none;align-items:center;justify-content:center;font-size:30px;
   background:radial-gradient(circle at 34% 30%,#ffe79a,#ffc233 45%,#c98a00);
   box-shadow:0 0 0 4px #ffd24a33,0 0 34px #ffd24a99,inset 0 -6px 12px #0004;
@@ -169,7 +168,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 /* ---------- tienda ---------- */
 .tabs{display:flex;gap:6px;padding:8px 8px 0}
 .tab{flex:1;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--mute);
-  border-radius:10px;padding:9px 4px;font:inherit;font-size:12.5px;font-weight:800;letter-spacing:1.4px;cursor:pointer}
+  border-radius:10px;padding:9px 4px;font:inherit;font-size:12.5px;font-weight:800;letter-spacing:1.4px}
 .tab.on{background:linear-gradient(92deg,#e82127,#ff6b3d);color:#fff;border-color:transparent;box-shadow:0 6px 18px #e8212755}
 .tabbody{flex:1 1 auto;overflow-y:auto;padding:10px;display:none;flex-direction:column;gap:7px}
 .tabbody.on{display:flex}
@@ -178,7 +177,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 
 .mode{display:flex;gap:5px;padding:0 10px 8px}
 .mode button{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--line);color:var(--mute);
-  border-radius:8px;padding:6px;font:inherit;font-size:11px;font-weight:800;letter-spacing:1px;cursor:pointer}
+  border-radius:8px;padding:6px;font:inherit;font-size:11px;font-weight:800;letter-spacing:1px}
 .mode button.on{background:#ffffff1c;color:#fff;border-color:#ffffff40}
 
 .up{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:12px;
@@ -199,7 +198,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 .up .gain.ck{color:var(--cyan);text-shadow:0 0 12px #4cc9f055}
 .up .gain.gd{color:var(--gold);text-shadow:0 0 12px #ffd24a55}
 .up button{flex:0 0 auto;min-width:94px;border:0;border-radius:10px;padding:10px 10px;font:inherit;font-size:15px;
-  font-weight:800;color:#fff;cursor:pointer;background:#2b3242;font-variant-numeric:tabular-nums;transition:filter .12s}
+  font-weight:800;color:#fff;background:#2b3242;font-variant-numeric:tabular-nums;transition:filter .12s}
 .up.afford button{background:linear-gradient(92deg,#e82127,#ff6b3d);box-shadow:0 4px 14px #e8212755}
 .up button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
 .up button:active{transform:scale(.95)}
@@ -226,7 +225,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 .prestige h2{margin:0;font-size:19px;font-style:italic;letter-spacing:2px;color:var(--cyan)}
 .prestige p{margin:0;font-size:13px;color:var(--mute)}
 .prestige .big{font-size:40px;font-style:italic;font-weight:800;color:var(--gold)}
-.prestige .btn{border:0;border-radius:12px;padding:13px;font:inherit;font-weight:800;letter-spacing:1px;cursor:pointer;
+.prestige .btn{border:0;border-radius:12px;padding:13px;font:inherit;font-weight:800;letter-spacing:1px;
   background:linear-gradient(92deg,#1d6fa5,#4cc9f0);color:#04121c;box-shadow:0 8px 24px #4cc9f055}
 .prestige .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
 
@@ -242,7 +241,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 
 .foot{display:flex;flex-wrap:wrap;gap:8px;padding:8px 10px;align-items:center}
 .foot button{flex:1 1 calc(50% - 4px);min-width:0;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--mute);
-  border-radius:9px;padding:8px;font:inherit;font-size:11.5px;font-weight:700;letter-spacing:.6px;cursor:pointer}
+  border-radius:9px;padding:8px;font:inherit;font-size:11.5px;font-weight:700;letter-spacing:.6px}
 .foot button:active{transform:scale(.97)}
 .foot button.danger:hover{color:#ff8a80;border-color:#ff8a8055}
 
@@ -266,7 +265,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 @keyframes pop{from{transform:scale(.88) translateY(14px);opacity:0}to{transform:none;opacity:1}}
 .modal h2{margin:0 0 6px;font-size:26px;font-style:italic;letter-spacing:1px}
 .modal p{margin:6px 0;color:var(--mute);font-size:14px}
-.modal .btn{border:0;border-radius:12px;padding:13px 30px;font:inherit;font-weight:800;letter-spacing:1px;cursor:pointer;
+.modal .btn{border:0;border-radius:12px;padding:13px 30px;font:inherit;font-weight:800;letter-spacing:1px;
   background:linear-gradient(92deg,#e82127,#ff6b3d);color:#fff;box-shadow:0 8px 24px #e8212755;margin-top:18px}
 .modal .btn.ghost{background:#ffffff14;border:1px solid var(--line);box-shadow:none;color:var(--ink);margin-left:8px}
 
