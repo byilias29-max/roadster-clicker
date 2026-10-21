@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sintaxis de los scripts
+        run: |
+          for f in $(find . -name '*.js' -not -path './.git/*' -not -path './node_modules/*'); do
+            node --check "$f" || exit 1
+          done
+          echo "JS OK"
+      - name: HTML bien formado
+        continue-on-error: true
+        run: npx --yes html-validate@9 --formatter stylish *.html
+      - name: El juego carga sin errores de sintaxis en el HTML
+        run: |
+          node -e "
+            const fs = require('fs');
+            const html = fs.readFileSync('index.html', 'utf8');
+            const m = html.match(/<script>([\s\S]*?)<\/script>/);
+            if (!m) { console.error('no hay <script> en index.html'); process.exit(1); }
+            fs.writeFileSync('/tmp/roadster-inline.js', m[1]);
+            console.log('script inline extraído');
+          "
+          node --check /tmp/roadster-inline.js
+          echo "SCRIPT INLINE OK"

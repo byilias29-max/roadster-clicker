@@ -1,5 +1,17 @@
 shots/
 __shot.png
 shotserver.mjs
+.env
+.env.*
+!.env.example
+node_modules/
+npm-debug.log*
+.vercel/
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.log
+dist/
+coverage/
