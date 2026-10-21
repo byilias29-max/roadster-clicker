@@ -54,9 +54,11 @@ En línea: <https://byilias29-max.github.io/roadster-clicker/>
 
 - El Roadster es **SVG inline** (carrocería, cristal, alerón, faros y ruedas de radios). Las ruedas
   giran según la producción y el escape escupe llamas al pulsar.
-- El fondo es un **canvas**: noche de asfalto con una **autopista en perspectiva** que viene hacia
-  el jugador, auroras de color vivo (rojo Tesla y cian) y estrellas. Los degradados se cachean y
-  solo se rehacen al redimensionar la ventana.
+- El fondo es un **canvas**: noche oscura con estrellas que derivan en diagonal hacia abajo-izquierda
+  y auroras de color vivo (rojo Tesla y cian). Encima, dentro del escenario, hay una capa de rayas
+  diagonales (`#bgmove`) que se desliza muy lentamente en esa misma diagonal: el patrón es periódico
+  y el desplazamiento es exactamente un periodo, así que el bucle **no produce ningún salto**.
+  Los degradados se cachean y solo se rehacen al redimensionar la ventana.
 - **Rendimiento**: la lógica corre con `setInterval` (100 ms), no con `requestAnimationFrame`, para que la
   producción siga activa con la pestaña en segundo plano. El `rAF` (60 fps) solo mueve los cursores,
   redibuja el fondo a ~40 fps y actualiza el contador. El DOM solo se escribe **cuando el texto
