@@ -23,13 +23,18 @@
 <title>ROADSTER CLICKER — pulsa el coche</title>
 <style>
 :root{
-  --red:#e82127; --red2:#ff4d3d; --cyan:#4cc9f0; --gold:#ffd24a;
+  --red:#e82127; --red2:#ff4d3d; --cyan:#4cc9f0; --gold:#ffd24a; --lime:#8ef5b0;
   --ink:#f2f5fa; --mute:#93a0b4; --bg:#07090f;
   --glass:rgba(18,22,32,.72); --line:rgba(255,255,255,.09);
   --sat:env(safe-area-inset-top,0px); --sab:env(safe-area-inset-bottom,0px);
+  /* cursor personalizado: puntero con el logo de Tesla */
+  --cur:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'%3E%3Cpath d='M3 2 L13 22 L15.6 14.2 L23.2 11.6 Z' fill='%23ffffff' stroke='%230a0d14' stroke-width='1.7' stroke-linejoin='round'/%3E%3Ccircle cx='20' cy='7' r='5.4' fill='%23e82127' stroke='%23ffffff' stroke-width='1.2'/%3E%3Cpath d='M17 4.4h6M20 4.4v5.2' stroke='%23ffffff' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E") 3 2, pointer;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :focus-visible{outline:2px solid var(--cyan,#19e3d3);outline-offset:2px}
+/* cursor personalizado en todo lo interactivo */
+body,#carHit,#golden,.up button,.tab,.iconbtn,.mode button,.foot button,.prestige .btn,.modal .btn{
+  cursor:var(--cur)}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--ink);
   font:15px/1.45 "Trebuchet MS","Segoe UI",system-ui,sans-serif;
   overscroll-behavior:none;user-select:none;-webkit-user-select:none}
@@ -55,6 +60,19 @@ header{display:flex;align-items:center;gap:14px;flex:0 0 auto}
 .chip.red .val{color:var(--red2)}
 .chip.cyan .val{color:var(--cyan)}
 .chip.gold .val{color:var(--gold)}
+/* el dinero: grande, con valor y con brillo */
+.chip.money{min-width:172px;padding:6px 18px 8px;
+  background:linear-gradient(180deg,rgba(232,33,39,.26),rgba(18,22,32,.82));
+  border-color:#e8212766;box-shadow:0 0 26px #e8212733,inset 0 1px 0 #ffffff1f}
+.chip.money .val{font-size:30px;line-height:1.02;color:#fff;letter-spacing:-.5px;
+  text-shadow:0 0 20px #ff6b3d99,0 2px 0 #7d0d13}
+.chip.money .worth{display:block;font-size:11.5px;color:var(--gold);font-weight:800;letter-spacing:.6px;margin-top:1px}
+.chip.money .val.bump{animation:bump .22s cubic-bezier(.2,1.6,.4,1)}
+@keyframes bump{0%{transform:scale(1)}45%{transform:scale(1.09)}100%{transform:scale(1)}}
+.chip .lb{display:flex;align-items:center;justify-content:center;gap:5px}
+.chip.money .lb::before{content:"";width:11px;height:11px;border-radius:50%;
+  background:radial-gradient(circle at 34% 30%,#ffe3a8,#c98a00 70%);
+  box-shadow:0 0 8px #ffd24a88}
 .iconbtn{width:42px;height:42px;border-radius:12px;background:var(--glass);border:1px solid var(--line);
   color:var(--ink);font-size:18px;cursor:pointer;backdrop-filter:blur(8px);flex:0 0 auto}
 .iconbtn:active{transform:scale(.92)}
@@ -97,6 +115,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
   18%{transform:translate(-50%,-14px) scale(1.15);opacity:1}
   100%{transform:translate(-50%,-88px) scale(.95);opacity:0}}
 .flt.gold{color:var(--gold);font-size:26px}
+.flt.small{font-size:15px;color:var(--lime);text-shadow:0 0 12px #8ef5b077}
 
 /* cookie dorada */
 #golden{position:absolute;width:66px;height:66px;border-radius:50%;cursor:pointer;z-index:4;
@@ -114,6 +133,25 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 .statusbar .frenzy{color:var(--gold);font-weight:800;font-style:italic}
 .statusbar .hint{color:var(--mute);font-size:12.5px}
 .statusbar .hint b{color:var(--ink)}
+/* progreso hacia la siguiente mejora: el jugador ve que avanza */
+.prog{flex:1 1 100%;display:flex;flex-direction:column;gap:4px;min-width:0}
+.prog .plabel{display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--mute);
+  font-weight:700;letter-spacing:.4px}
+.prog .plabel b{color:var(--cyan);font-weight:800}
+.prog .pbar{height:7px;border-radius:5px;background:#ffffff12;overflow:hidden;box-shadow:inset 0 1px 3px #0008}
+.prog .pbar i{display:block;height:100%;width:0;border-radius:5px;
+  background:linear-gradient(90deg,#e82127,#ff8a3a 60%,var(--gold));
+  box-shadow:0 0 12px #ff6b3d99;transition:width .45s cubic-bezier(.2,.9,.3,1)}
+
+/* cursores automáticos (logo de Tesla) */
+#cursors{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.cur{position:absolute;left:0;top:0;width:26px;height:26px;will-change:transform;
+  filter:drop-shadow(0 3px 6px #000a);transition:filter .2s}
+.cur svg{display:block;width:100%;height:100%}
+.cur.hit{filter:drop-shadow(0 0 10px #8ef5b0aa) drop-shadow(0 3px 6px #000a)}
+.spark{position:absolute;width:8px;height:8px;border-radius:50%;background:#fff;pointer-events:none;
+  box-shadow:0 0 10px #8ef5b0,0 0 20px #8ef5b0aa;animation:spark .45s ease-out forwards}
+@keyframes spark{0%{transform:scale(.6);opacity:1}100%{transform:scale(2.6);opacity:0}}
 
 /* ---------- tienda ---------- */
 .tabs{display:flex;gap:6px;padding:8px 8px 0}
@@ -139,13 +177,36 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 .up .txt{flex:1 1 auto;min-width:0}
 .up .nm{font-size:13.5px;font-weight:800;display:flex;gap:6px;align-items:baseline}
 .up .nm em{font-style:normal;font-size:11px;color:var(--mute);font-weight:700}
-.up .ds{font-size:11.5px;color:var(--cyan);opacity:.9}
+.up .ds{font-size:11.5px;color:var(--cyan);opacity:.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .up .ds.gold{color:var(--gold)}
-.up button{flex:0 0 auto;min-width:82px;border:0;border-radius:10px;padding:9px 8px;font:inherit;font-size:13px;
-  font-weight:800;color:#fff;cursor:pointer;background:#2b3242;font-variant-numeric:tabular-nums}
+/* la compra: precio grande + lo que da, bien resaltado */
+.up .buybox{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.up .gain{font-size:12.5px;font-weight:800;letter-spacing:.2px;white-space:nowrap;color:var(--lime);
+  text-shadow:0 0 12px #8ef5b055}
+.up .gain.ck{color:var(--cyan);text-shadow:0 0 12px #4cc9f055}
+.up .gain.gd{color:var(--gold);text-shadow:0 0 12px #ffd24a55}
+.up button{flex:0 0 auto;min-width:94px;border:0;border-radius:10px;padding:10px 10px;font:inherit;font-size:15px;
+  font-weight:800;color:#fff;cursor:pointer;background:#2b3242;font-variant-numeric:tabular-nums;transition:filter .12s}
 .up.afford button{background:linear-gradient(92deg,#e82127,#ff6b3d);box-shadow:0 4px 14px #e8212755}
 .up button:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
 .up button:active{transform:scale(.95)}
+/* dopamina: destello al comprar */
+.up.bought{animation:bought .5s cubic-bezier(.2,1.4,.4,1)}
+@keyframes bought{0%{box-shadow:0 0 0 0 #8ef5b0}25%{background:rgba(142,245,176,.22);border-color:#8ef5b0}
+  60%{background:rgba(255,255,255,.05)}100%{background:rgba(255,255,255,.035)}}
+.up button.bought{animation:btnflash .45s ease-out}
+@keyframes btnflash{0%{filter:brightness(1)}18%{filter:brightness(2.4) saturate(1.4)}
+  100%{filter:brightness(1)}}
+.up .nm em.pop{animation:bump .3s cubic-bezier(.2,1.6,.4,1);color:var(--lime)}
+/* onda expansiva + texto flotante en la compra */
+.burst{position:fixed;z-index:15;width:18px;height:18px;margin:-9px 0 0 -9px;border-radius:50%;
+  border:2px solid var(--lime);pointer-events:none;animation:burst .55s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes burst{0%{transform:scale(.4);opacity:.95}100%{transform:scale(7);opacity:0}}
+.gainpop{position:fixed;z-index:16;pointer-events:none;font-weight:800;font-style:italic;font-size:19px;
+  color:var(--lime);text-shadow:0 2px 10px #000c;animation:gp 1s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes gp{0%{transform:translate(-50%,0) scale(.7);opacity:0}
+  20%{transform:translate(-50%,-12px) scale(1.15);opacity:1}
+  100%{transform:translate(-50%,-62px) scale(.95);opacity:0}}
 
 /* prestigio */
 .prestige{padding:16px;text-align:center;display:flex;flex-direction:column;gap:10px}
@@ -222,8 +283,16 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 @media (max-width:560px){
   .chip{padding:6px 9px;min-width:74px}
   .chip .val{font-size:15px}
+  .chip.money{min-width:130px;padding:5px 12px 6px}
+  .chip.money .val{font-size:23px}
   .brand span{display:none}
   #app{padding:calc(8px + var(--sat)) 8px calc(8px + var(--sab));gap:8px}
+}
+/* quien prefiera menos movimiento: el juego sigue funcionando igual, más tranquilo */
+@media (prefers-reduced-motion:reduce){
+  #arena.shake,#arena.shake svg,#carHit.boost,#carHit.squash #carGroup{animation:none}
+  .flt,.gainpop,.burst,.spark,.cur.hit svg{animation-duration:.01ms!important}
+  .prog .pbar i{transition:none}
 }
 </style>
 </head>
@@ -239,7 +308,11 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
       <span>PULSA EL COCHE · HAZ CLICLICLAR EL UNIVERSO</span>
     </div>
     <div class="hspace"></div>
-    <div class="chip red"><span class="lb">COOKIES</span><span class="val" id="hCookies">0</span></div>
+    <div class="chip money">
+      <span class="lb">COOKIES</span>
+      <span class="val" id="hCookies">0</span>
+      <span class="worth" id="hWorth">≈ 0,00 €</span>
+    </div>
     <div class="chip cyan"><span class="lb">POR SEGUNDO</span><span class="val" id="hCps">0</span></div>
     <div class="chip gold"><span class="lb">CRÉDITOS</span><span class="val" id="hCred">0</span></div>
     <button class="iconbtn" id="btnSound" title="Sonido (M)" aria-label="Activar o silenciar el sonido (tecla M)">🔊</button>
@@ -249,6 +322,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
     <section class="stage">
       <div class="panel" id="arena">
         <div id="floaters"></div>
+        <div id="cursors" aria-hidden="true"></div>
         <div id="carHit" tabindex="0" role="button" aria-label="Pulsa el Tesla Roadster">
           <svg id="car" viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -399,6 +473,13 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
         <span class="chip" style="min-width:0;padding:6px 12px"><span class="lb">TIEMPO</span><span class="val" id="hTime">0:00</span></span>
         <span class="frenzy" id="frenzyTag"></span>
         <span class="hint" id="hint"></span>
+        <div class="prog" id="prog">
+          <div class="plabel">
+            <span id="progName">Siguiente mejora: —</span>
+            <span id="progVal">0%</span>
+          </div>
+          <div class="pbar"><i id="progFill"></i></div>
+        </div>
       </div>
     </section>
 
@@ -524,6 +605,12 @@ const UPGRADES = [
   {id:'planeta',  ico:'🌍', tipo:'cps',   name:'Planeta entero',      desc:'+1,6M cookies/s',   cost:75000000000,rate:1600000,lock:12000000000},
   {id:'singular', ico:'🌀', tipo:'cps',   name:'Singularidad',        desc:'+12M cookies/s',    cost:1000000000000,rate:12000000,lock:150000000000},
 
+  // --- cursores automáticos: pulsan el coche solos ---
+  {id:'auto1', ico:'🖱️', tipo:'cursor', name:'Cursor de Tesla',      desc:'+0,5 clic/s automático', cost:60,       rate:0.5, cursors:1, lock:20},
+  {id:'auto2', ico:'🖱️', tipo:'cursor', name:'Cursors de fibra',     desc:'+2 clics/s automáticos', cost:2500,     rate:2,   cursors:1, lock:800},
+  {id:'auto3', ico:'🤖', tipo:'cursor', name:'Flota de autopilotos', desc:'+8 clics/s automáticos', cost:120000,   rate:8,   cursors:2, lock:25000},
+  {id:'auto4', ico:'🚀', tipo:'cursor', name:'Ejército de cursores', desc:'+40 clics/s automáticos',cost:8000000,  rate:40,  cursors:3, lock:1500000},
+
   // --- potencia de clic ---
   {id:'boton',   ico:'🔘', tipo:'click', name:'Botón de arranque',  desc:'x2 al clic',  cost:500,        lock:100},
   {id:'fibra',   ico:'🔑', tipo:'click', name:'Llave de fibra de carbono', desc:'x2 al clic', cost:50000, lock:8000},
@@ -531,9 +618,9 @@ const UPGRADES = [
   {id:'rocket',  ico:'🚀', tipo:'click', name:'Modo cohete',        desc:'x2 al clic',  cost:500000000,  lock:60000000},
 
   // --- galleta dorada ---
-  {id:'midas',   ico:'🤲', tipo:'golden', name:'Manos de Midas',     desc:'+15% de aparición de doradas', cost:100000,    lock:20000},
-  {id:'reloj',   ico:'⏳', tipo:'golden', name:'Reloj de fibra',     desc:'+10s de frenesí',  cost:2000000,   lock:400000},
-  {id:'auto',    ico:'🧲', tipo:'golden', name:'Imán dorado',        desc:'+50% de tiempo visible', cost:60000000, lock:10000000}
+  {id:'midas',   ico:'🤲', tipo:'golden', name:'Manos de Midas',     desc:'+15% de aparición de doradas', gain:'+15% doradas', cost:100000,    lock:20000},
+  {id:'reloj',   ico:'⏳', tipo:'golden', name:'Reloj de fibra',     desc:'+10s de frenesí',  gain:'+10s frenesí', cost:2000000,   lock:400000},
+  {id:'auto',    ico:'🧲', tipo:'golden', name:'Imán dorado',        desc:'+50% de tiempo visible', gain:'+50% tiempo', cost:60000000, lock:10000000}
 ];
 
 const ACHIEVEMENTS = [
@@ -612,6 +699,11 @@ function fmtCps(c){
   if(c > 0 && c < 10) return c.toFixed(1).replace(/\.0$/,'').replace('.',',');
   return fmt(c);
 }
+/* El dinero tiene valor: 1 cookie = 0,05 € */
+function fmtEUR(v){
+  if(v < 1000) return v.toFixed(2).replace('.',',');
+  return fmt(v);
+}
 
 /* ---------------------------------------------------------
    4. CÁLCULOS
@@ -630,6 +722,22 @@ function baseCps(){
   let c = 0;
   for(const u of UPGRADES) if(u.tipo === 'cps') c += (u.rate || 0) * (S.upgrades[u.id] || 0);
   return c;
+}
+/* clics por segundo que hacen los cursores automáticos (el logo de Tesla) */
+function autoClicks(){
+  let c = 0;
+  for(const u of UPGRADES) if(u.tipo === 'cursor') c += (u.rate || 0) * (S.upgrades[u.id] || 0);
+  return c;
+}
+/* cuántos cursores se ven en pantalla (con tope: si no, se vuelve un caos) */
+function visibleCursors(){
+  let n = 0;
+  for(const u of UPGRADES) if(u.tipo === 'cursor') n += (u.cursors || 1) * (S.upgrades[u.id] || 0);
+  return Math.min(10, n);
+}
+/* producción total que entra por segundo: la pasiva + la de los cursores */
+function incomePerSec(){
+  return cps() + autoClicks() * clickMult();
 }
 /* producción con créditos pero SIN frenesí: es la que se cobra al volver (offline) */
 function cpsNoFrenzy(){
@@ -810,6 +918,7 @@ function noise(dur, vol, freq){
 const sfx = {
   click(){ noise(.14,.20,2600); tone(120,42,.20,'sawtooth',.16); tone(880,660,.07,'square',.06); },
   buy(){ tone(660,660,.08,'triangle',.22); tone(990,990,.12,'triangle',.20,.07); },
+  cash(){ tone(1320,1320,.07,'square',.10); tone(1760,1760,.10,'square',.09,.05); tone(2640,2640,.12,'sine',.07,.10); },
   nope(){ tone(220,150,.14,'square',.12); },
   gold(){ [784,988,1175,1568].forEach((f,i)=>tone(f,f,.16,'triangle',.18,i*.07)); },
   frenzy(){ tone(300,1400,.5,'sawtooth',.14); noise(.4,.12,3200); },
@@ -866,13 +975,33 @@ function buildShop(){
          <div class="nm">${u.name} <em data-count></em></div>
          <div class="ds" data-desc>${u.desc}</div>
        </div>
-       <button data-buy="${u.id}">—</button>`;
+       <div class="buybox">
+         <span class="gain" data-gain></span>
+         <button data-buy="${u.id}">—</button>
+       </div>`;
     box.appendChild(row);
   }
   box.addEventListener('click', e => {
     const b = e.target.closest('[data-buy]');
     if(b) buy(b.dataset.buy);
   });
+}
+/* Lo que DA la mejora: por unidad y lo que suma la compra pendiente (x1/x10/MÁX). */
+function gainInfo(u, n){
+  if(u.tipo === 'cps')   return {t:'+' + fmtCps((u.rate || 0) * n) + ' cookies/s', c:''};
+  if(u.tipo === 'cursor') return {t:'+' + fmtCps((u.rate || 0) * n) + ' clic/s', c:'ck'};
+  if(u.tipo === 'click')  return {t:'x' + fmt(Math.pow(2, n)) + ' al clic', c:'ck'};
+  if(u.tipo === 'golden') return {t:(u.gain || u.desc), c:'gd'};
+  return {t:u.desc, c:''};
+}
+/* Lo que aporta ESTA mejora concreta (no la suma de todas). */
+function ownInfo(u){
+  const owned = S.upgrades[u.id] || 0;
+  if(!owned) return u.desc + ' por unidad';
+  if(u.tipo === 'cps')    return '+' + fmtCps((u.rate || 0) * owned) + ' cookies/s · ×' + owned;
+  if(u.tipo === 'cursor') return '+' + fmtCps((u.rate || 0) * owned) + ' clic/s · ×' + owned;
+  if(u.tipo === 'click')  return 'x' + fmt(Math.pow(2, owned)) + ' al clic · ×' + owned;
+  return u.desc + ' · ×' + owned;
 }
 function refreshShop(){
   for(const u of UPGRADES){
@@ -882,26 +1011,34 @@ function refreshShop(){
     const locked = S.everTotal < u.lock && owned === 0;
     row.classList.toggle('locked', locked);
     const cnt = row.querySelector('[data-count]');
-    cnt.textContent = owned ? '×' + owned : '';
+    const cntTxt = owned ? '×' + owned : '';
+    if(cnt.textContent !== cntTxt) cnt.textContent = cntTxt;
     const btn = row.querySelector('button');
+    const gain = row.querySelector('[data-gain]');
     if(locked){
       btn.textContent = '🔒';
       btn.disabled = true;
-      row.querySelector('[data-desc]').textContent = 'Bloqueado · ' + fmt(u.lock) + ' cookies históricas';
+      gain.textContent = '';
+      setText(row.querySelector('[data-desc]'), 'Bloqueado · ' + fmt(u.lock) + ' cookies históricas');
       continue;
     }
     let n = 1;
     if(S.mode === '10') n = 10;
     else if(S.mode === 'max') n = Math.max(1, maxAffordable(u.id));
     const c = costOf(u.id, n);
-    btn.textContent = fmt(c);
+    const costTxt = fmt(c);
+    if(btn.textContent !== costTxt) btn.textContent = costTxt;
     btn.disabled = S.cookies < c;
     row.classList.toggle('afford', S.cookies >= c);
-    const d = row.querySelector('[data-desc]');
-    /* cada fila muestra SU propia contribución, no la suma de todas las mejoras */
-    d.textContent = u.desc + (u.tipo === 'cps' && owned > 0
-      ? ' · esta mejora: ' + fmtCps((u.rate || 0) * owned) + '/s' : '');
+    const gi = gainInfo(u, n);
+    if(gain.textContent !== gi.t) gain.textContent = gi.t;
+    gain.className = 'gain ' + gi.c;
+    setText(row.querySelector('[data-desc]'), ownInfo(u));
   }
+}
+/* Escribe solo si cambia: evita repintados innecesarios del DOM. */
+function setText(el, txt){
+  if(el && el.textContent !== txt) el.textContent = txt;
 }
 function buy(id){
   const u = U[id];
@@ -915,10 +1052,43 @@ function buy(id){
   S.cookies -= c;
   S.upgrades[id] = (S.upgrades[id] || 0) + n;
   sfx.buy();
+  sfx.cash();
   unlockAch('buy1');
   checkAchievements();
+  buyFeedback(id, n);
   refreshShop();
   save();
+}
+/* Dopamina: la fila destella, sale una onda, el precio se ilumina y flota
+   lo que la compra ha dado. */
+function buyFeedback(id, n){
+  const u = U[id];
+  const row = $(`.up[data-id="${id}"]`);
+  if(!row) return;
+  const btn = row.querySelector('button');
+  const gi = gainInfo(u, n);
+
+  row.classList.remove('bought'); void row.offsetWidth; row.classList.add('bought');
+  btn.classList.remove('bought'); void btn.offsetWidth; btn.classList.add('bought');
+  const cnt = row.querySelector('[data-count]');
+  cnt.classList.remove('pop'); void cnt.offsetWidth; cnt.classList.add('pop');
+
+  const b = btn.getBoundingClientRect();
+  const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+  const ring = document.createElement('div');
+  ring.className = 'burst';
+  ring.style.left = cx + 'px';
+  ring.style.top = cy + 'px';
+  document.body.appendChild(ring);
+  setTimeout(()=>ring.remove(), 600);
+
+  const pop = document.createElement('div');
+  pop.className = 'gainpop';
+  pop.textContent = gi.t;
+  pop.style.left = cx + 'px';
+  pop.style.top = (b.top - 4) + 'px';
+  document.body.appendChild(pop);
+  setTimeout(()=>pop.remove(), 1050);
 }
 
 /* ---------------------------------------------------------
@@ -943,6 +1113,15 @@ function refreshAch(){
    10. CLIC EN EL COCHE
    --------------------------------------------------------- */
 const arena = $('#arena'), carHit = $('#carHit'), floaters = $('#floaters');
+function spawnFloater(x, y, text, small){
+  const f = document.createElement('div');
+  f.className = 'flt' + (small ? ' small' : '');
+  f.textContent = text;
+  f.style.left = x + 'px';
+  f.style.top = y + 'px';
+  floaters.appendChild(f);
+  setTimeout(()=>f.remove(), 1100);
+}
 function clickCar(ev){
   initAudio();
   const amount = clickMult();
@@ -956,13 +1135,7 @@ function clickCar(ev){
   const rect = arena.getBoundingClientRect();
   const x = (ev && ev.clientX ? ev.clientX : rect.left + rect.width/2) - rect.left;
   const y = (ev && ev.clientY ? ev.clientY : rect.top + rect.height/2) - rect.top;
-  const f = document.createElement('div');
-  f.className = 'flt';
-  f.textContent = '+' + fmt(amount);
-  f.style.left = x + 'px';
-  f.style.top = (y - 10) + 'px';
-  floaters.appendChild(f);
-  setTimeout(()=>f.remove(), 1100);
+  spawnFloater(x, y - 10, '+' + fmt(amount), false);
 
   // reacción del coche
   carHit.classList.remove('boost','squash');
@@ -988,6 +1161,107 @@ carHit.addEventListener('pointerdown', e => {
 carHit.addEventListener('keydown', e => {
   if(e.key === ' ' || e.key === 'Enter' || e.key === 'Spacebar'){ e.preventDefault(); clickCar(null); }
 });
+
+/* ---------------------------------------------------------
+   10.b CURSORES AUTOMÁTICOS (logo de Tesla)
+   Pulsan el coche solos: el jugador ve que el juego avanza
+   sin tocar nada.
+   --------------------------------------------------------- */
+const cursorLayer = $('#cursors');
+const cursorPool = [];
+let arenaW = 0, arenaH = 0, carBox = {x:0, y:0, w:0, h:0};
+let lastAutoFloat = 0, lastAutoHit = 0;
+
+function measureArena(){
+  const r = arena.getBoundingClientRect();
+  arenaW = r.width; arenaH = r.height;
+  const c = carHit.getBoundingClientRect();
+  carBox = {x: c.left - r.left, y: c.top - r.top, w: c.width, h: c.height};
+}
+const CUR_SVG =
+  '<svg viewBox="0 0 30 30" aria-hidden="true">' +
+  '<path d="M3 2 L13 22 L15.6 14.2 L23.2 11.6 Z" fill="#fff" stroke="#0a0d14" stroke-width="1.7" stroke-linejoin="round"/>' +
+  '<circle cx="20" cy="7" r="5.4" fill="#e82127" stroke="#fff" stroke-width="1.2"/>' +
+  '<path d="M17 4.4h6M20 4.4v5.2" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>';
+
+function makeCursor(){
+  const el = document.createElement('div');
+  el.className = 'cur';
+  el.innerHTML = CUR_SVG;
+  const c = {el, x:0, y:0, tx:0, ty:0, state:'idle', wait:0};
+  cursorPool.push(c);
+  cursorLayer.appendChild(el);
+  return c;
+}
+function placeCursor(c, random){
+  if(random || !arenaW){
+    c.x = 20 + Math.random() * Math.max(1, arenaW - 46);
+    c.y = 20 + Math.random() * Math.max(1, arenaH - 46);
+  }else{
+    c.x = carBox.x + carBox.w * (0.2 + Math.random() * 0.6);
+    c.y = carBox.y + carBox.h * (0.6 + Math.random() * 0.3);
+  }
+  c.el.style.transform = 'translate3d(' + c.x.toFixed(1) + 'px,' + c.y.toFixed(1) + 'px,0)';
+}
+function autoClick(c, now){
+  c.el.classList.add('hit');
+  setTimeout(()=>c.el.classList.remove('hit'), 200);
+  const svg = c.el.firstElementChild;
+  if(svg && svg.animate){                 // pulso sin provocar reflow
+    svg.animate(
+      [{transform:'scale(1)'}, {transform:'scale(.7) rotate(-10deg)'}, {transform:'scale(1)'}],
+      {duration:280, easing:'ease-out'});
+  }
+  if(now - lastAutoFloat < 120) return;   // no saturar de números
+  lastAutoFloat = now;
+  spawnFloater(c.x + 10, c.y - 8, '+' + fmt(clickMult()), true);
+  const sp = document.createElement('div');
+  sp.className = 'spark';
+  sp.style.left = c.x + 'px';
+  sp.style.top = c.y + 'px';
+  cursorLayer.appendChild(sp);
+  setTimeout(()=>sp.remove(), 500);
+  lastAutoHit = now;
+}
+function updateCursors(dt, now){
+  const want = visibleCursors();
+  while(cursorPool.length < want){
+    const c = makeCursor();
+    placeCursor(c, true);
+    c.wait = 0.2 + Math.random() * 0.9;
+  }
+  while(cursorPool.length > want){
+    const c = cursorPool.pop();
+    if(c) c.el.remove();
+  }
+  if(!cursorPool.length) return;
+  const per = autoClicks() / cursorPool.length;     // clics por segundo y cursor
+  if(per <= 0) return;
+  const interval = 1 / per;
+  for(const c of cursorPool){
+    if(c.state === 'idle'){
+      c.wait -= dt;
+      if(c.wait <= 0){
+        c.tx = carBox.x + carBox.w * (0.25 + Math.random() * 0.5);
+        c.ty = carBox.y + carBox.h * (0.5 + Math.random() * 0.3);
+        c.state = 'move';
+      }
+    }else{
+      const dx = c.tx - c.x, dy = c.ty - c.y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if(d < 5){
+        c.state = 'idle';
+        c.wait = interval * (0.55 + Math.random() * 0.8);
+        autoClick(c, now);
+      }else{
+        const step = Math.min(d, 820 * dt);
+        c.x += dx / d * step;
+        c.y += dy / d * step;
+      }
+    }
+    c.el.style.transform = 'translate3d(' + c.x.toFixed(1) + 'px,' + c.y.toFixed(1) + 'px,0)';
+  }
+}
 
 /* ---------------------------------------------------------
    11. GALLETA DORADA
@@ -1046,7 +1320,7 @@ function catchGolden(){
     unlockAch('frenzy');
     toast('⚡ ¡FRENESÍ! x' + FRENZY_MULT + ' durante ' + (FRENZY_TIME + frenzyBonus) + 's');
   }else{
-    const base = Math.max(50, cps() * 12);
+    const base = Math.max(50, incomePerSec() * 12);
     const gain = Math.floor(base * (1 + Math.random() * 2));
     S.cookies += gain; S.total += gain; S.everTotal += gain;
     toast('🍪 Galleta dorada: +' + fmt(gain) + ' cookies');
@@ -1100,17 +1374,58 @@ function launchSequence(gain){
 /* ---------------------------------------------------------
    13. UI
    --------------------------------------------------------- */
+/* El dinero: un solo sitio que lo escribe, con caché de texto para no
+   repintar el DOM en cada frame. */
+function updateMoneyReadout(now, allowBump){
+  const moneyTxt = fmt(S.cookies);
+  if(moneyTxt !== lastMoney){
+    lastMoney = moneyTxt;
+    moneyEl.textContent = moneyTxt;
+    if(allowBump && now - lastBump > 240){
+      lastBump = now;
+      moneyEl.classList.remove('bump'); void moneyEl.offsetWidth; moneyEl.classList.add('bump');
+    }
+  }
+  const worthTxt = '≈ ' + fmtEUR(S.cookies * 0.05) + ' €';
+  if(worthTxt !== lastWorth){ lastWorth = worthTxt; worthEl.textContent = worthTxt; }
+  const rateTxt = fmtCps(incomePerSec());
+  if(rateTxt !== lastRate){ lastRate = rateTxt; rateEl.textContent = rateTxt; }
+}
+/* La siguiente mejora desbloqueable: el jugador ve cuánto le falta. */
+function nextUnlock(){
+  let best = null;
+  for(const u of UPGRADES){
+    if(S.everTotal >= u.lock) continue;
+    if(!best || u.lock < best.lock) best = u;
+  }
+  return best;
+}
+function updateProgress(){
+  const u = nextUnlock();
+  const name = $('#progName'), val = $('#progVal'), fill = $('#progFill');
+  if(!u){
+    setText(name, '★ Todas las mejoras desbloqueadas');
+    setText(val, '100%');
+    fill.style.width = '100%';
+    return;
+  }
+  let prev = 0;
+  for(const x of UPGRADES) if(x.lock < u.lock && x.lock > prev) prev = x.lock;
+  const span = Math.max(1, u.lock - prev);
+  const p = Math.max(0, Math.min(1, (S.everTotal - prev) / span));
+  setText(name, 'Siguiente: ' + u.ico + ' ' + u.name);
+  setText(val, fmt(S.everTotal) + ' / ' + fmt(u.lock));
+  fill.style.width = (p * 100).toFixed(1) + '%';
+}
 function refreshUI(){
-  const c = cps();
-  $('#hCookies').textContent = fmt(S.cookies);
-  $('#hCps').textContent = fmtCps(c);
+  updateMoneyReadout(performance.now(), false);
   $('#hCred').textContent = S.credits;
   $('#hClicks').textContent = fmt(S.clicks);
   $('#hGolden').textContent = S.golden;
   $('#hTime').textContent = fmtTime(S.playTime);
 
   const f = frenzyOn();
-  $('#frenzyTag').textContent = f ? '⚡ FRENESÍ x' + FRENZY_MULT + ' — ' + Math.ceil(frenzyLeft()) + 's' : '';
+  setText($('#frenzyTag'), f ? '⚡ FRENESÍ x' + FRENZY_MULT + ' — ' + Math.ceil(frenzyLeft()) + 's' : '');
   if(f && !lastFrenzy) unlockAch('frenzy');
   lastFrenzy = f;
 
@@ -1127,10 +1442,13 @@ function refreshUI(){
   $('#btnPrestige').disabled = gain < 1;
 
   const hint = $('#hint');
+  const aut = autoClicks();
   if(S.cookies < 15) hint.innerHTML = 'Pulsa el <b>Roadster</b> para ganar cookies y compra tu primer <b>cargador</b>.';
   else if(gain === 0 && S.total < PRESTIGE_REQ) hint.innerHTML = 'Goal: <b>' + fmt(PRESTIGE_REQ) + '</b> cookies para el lanzamiento orbital.';
+  else if(aut > 0) hint.innerHTML = 'Pasivo <b>' + fmtCps(cps()) + '</b>/s · Cursores <b>' + fmtCps(aut) + '</b> clic/s × <b>' + fmt(clickMult()) + '</b> = <b>' + fmtCps(incomePerSec()) + '</b>/s';
   else hint.innerHTML = 'Producción: <b>' + fmtCps(cps()) + '</b>/s · Clic: <b>' + fmt(clickMult()) + '</b>';
 
+  updateProgress();
   $('#btnSound').textContent = S.muted ? '🔇' : '🔊';
 }
 function refreshAll(){
@@ -1231,7 +1549,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------------------------------------------------------
-   15. FONDO ESTELAR (canvas)
+   15. FONDO (canvas): noche de asfalto con la Autopista Tesla
    --------------------------------------------------------- */
 const sky = $('#sky');
 const sctx = sky.getContext('2d');
@@ -1242,38 +1560,78 @@ function resizeSky(){
   W = sky.clientWidth; H = sky.clientHeight;
   sky.width = W * DPR; sky.height = H * DPR;
   sctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  const count = Math.round(W * H / 5200);
+  const count = Math.round(W * H / 7000);
   stars = [];
   for(let i = 0; i < count; i++){
     stars.push({
-      x: Math.random() * W, y: Math.random() * H * .88,
-      r: Math.random() * 1.4 + .3, s: Math.random() * .9 + .2,
+      x: Math.random() * W, y: Math.random() * H * .70,
+      r: Math.random() * 1.2 + .3, s: Math.random() * .9 + .2,
       p: Math.random() * Math.PI * 2
     });
   }
   // degradados: se crean una sola vez por tamaño, no en cada frame
   skyGrad = sctx.createLinearGradient(0, 0, 0, H);
-  skyGrad.addColorStop(0, '#05070d');
-  skyGrad.addColorStop(.55, '#0a1020');
-  skyGrad.addColorStop(1, '#160b12');
+  skyGrad.addColorStop(0, '#04060b');
+  skyGrad.addColorStop(.52, '#080d1a');
+  skyGrad.addColorStop(.78, '#140a14');
+  skyGrad.addColorStop(1, '#1d0a10');
   glowGrad = sctx.createRadialGradient(W*.5, H, 10, W*.5, H, H*.55);
-  glowGrad.addColorStop(0, 'rgba(232,33,39,.22)');
+  glowGrad.addColorStop(0, 'rgba(232,33,39,.26)');
   glowGrad.addColorStop(1, 'rgba(232,33,39,0)');
+  measureArena();
 }
 function drawSky(t){
   if(!skyGrad || !glowGrad) return;
   sctx.fillStyle = skyGrad; sctx.fillRect(0, 0, W, H);
+
+  // estrellas
   for(const s of stars){
-    const a = .35 + .45 * Math.sin(t * .0016 * s.s + s.p);
-    sctx.globalAlpha = Math.max(.08, a);
+    const a = .3 + .4 * Math.sin(t * .0016 * s.s + s.p);
+    sctx.globalAlpha = Math.max(.06, a);
     sctx.fillStyle = '#cfe6ff';
-    sctx.beginPath(); sctx.arc(s.x, s.y, s.r, 0, 6.2832); sctx.fill();
+    sctx.fillRect(s.x, s.y, s.r, s.r);
   }
   sctx.globalAlpha = 1;
-  // resplandor rojo inferior (el taller)
+
+  const horizon = H * .74;
+
+  // aurora: manchas de color vivo que se desplazan despacio
+  sctx.globalCompositeOperation = 'lighter';
+  const ax = W * (.5 + .40 * Math.sin(t * .00013));
+  const ay = horizon * (.62 + .14 * Math.cos(t * .00021));
+  const g1 = sctx.createRadialGradient(ax, ay, 10, ax, ay, H * .62);
+  g1.addColorStop(0, 'rgba(232,33,39,.20)');
+  g1.addColorStop(.45, 'rgba(150,40,190,.10)');
+  g1.addColorStop(1, 'rgba(0,0,0,0)');
+  sctx.fillStyle = g1; sctx.fillRect(0, 0, W, H);
+  const bx = W * (.5 - .40 * Math.sin(t * .00011 + 2));
+  const g2 = sctx.createRadialGradient(bx, ay * .9, 10, bx, ay * .9, H * .55);
+  g2.addColorStop(0, 'rgba(76,201,240,.14)');
+  g2.addColorStop(1, 'rgba(0,0,0,0)');
+  sctx.fillStyle = g2; sctx.fillRect(0, 0, W, H);
+  sctx.globalCompositeOperation = 'source-over';
+
+  // resplandor rojo del taller
   sctx.fillStyle = glowGrad; sctx.fillRect(0, H*.45, W, H*.55);
+
+  // autopista en perspectiva: viene hacia el jugador
+  sctx.lineWidth = 1;
+  for(let i = -7; i <= 7; i++){
+    const xb = W/2 + i * W * .15;
+    const xt = W/2 + i * W * .014;
+    sctx.strokeStyle = 'rgba(120,190,235,' + (.035 + .035 * Math.abs(i / 7)).toFixed(3) + ')';
+    sctx.beginPath(); sctx.moveTo(xt, horizon); sctx.lineTo(xb, H); sctx.stroke();
+  }
+  const scroll = (t * .00013) % 1;
+  for(let k = 0; k < 16; k++){
+    const z = (k / 16 + scroll) % 1;
+    const y = horizon + (H - horizon) * z * z;
+    const a = .04 + .26 * z;
+    sctx.strokeStyle = 'rgba(255,' + Math.round(90 + 90 * z) + ',' + Math.round(40 + 60 * z) + ',' + a.toFixed(3) + ')';
+    sctx.beginPath(); sctx.moveTo(0, y); sctx.lineTo(W, y); sctx.stroke();
+  }
 }
-window.addEventListener('resize', resizeSky);
+window.addEventListener('resize', ()=>{ resizeSky(); });
 
 /* ---------------------------------------------------------
    16. BUCLE PRINCIPAL
@@ -1294,18 +1652,25 @@ function tick(){
   if(dt < 0) dt = 0;
   if(dt > MAX_TICK) dt = MAX_TICK;   // como mucho 8 h de golpe
 
-  // producción
+  // producción pasiva
   const c = cps();
   if(c > 0){
     S.cookies += c * dt;
     S.total += c * dt;
     S.everTotal += c * dt;
-    checkAchievements();
   }
+  // producción de los cursores automáticos (cada clic vale lo mismo que tu clic)
+  const auto = autoClicks() * clickMult();
+  if(auto > 0){
+    S.cookies += auto * dt;
+    S.total += auto * dt;
+    S.everTotal += auto * dt;
+  }
+  if(c > 0 || auto > 0) checkAchievements();
   S.playTime += dt;
 
   // ruedas giran según producción
-  wheelAngle += (c * .6 + (frenzyOn() ? 40 : 6)) * dt;
+  wheelAngle += (incomePerSec() * .6 + (frenzyOn() ? 40 : 6)) * dt;
   const wr = $('#wRear'), wf = $('#wFront');
   if(wr) wr.setAttribute('transform', `rotate(${wheelAngle % 360} 185 230)`);
   if(wf) wf.setAttribute('transform', `rotate(${wheelAngle % 360} 455 230)`);
@@ -1332,8 +1697,27 @@ function tick(){
   if(softAcc > .6){ softAcc = 0; refreshShop(); }
 }
 
+/* El bucle visual (60 fps) mueve los cursores, dibuja el fondo y refresca
+   el contador. Solo escribe en el DOM cuando el texto cambia: sin repintados
+   innecesarios, todo va fluido. */
+let lastFrame = performance.now();
+let lastSky = 0, lastMoney = '', lastWorth = '', lastRate = '', lastBump = 0;
+const moneyEl = $('#hCookies'), worthEl = $('#hWorth'), rateEl = $('#hCps');
 function drawLoop(now){
-  drawSky(now);
+  const dt = Math.min(.05, (now - lastFrame) / 1000);
+  lastFrame = now;
+
+  // cursores automáticos
+  updateCursors(dt, now);
+
+  // el dinero: texto solo si cambia + un pequeño rebote (con tope)
+  updateMoneyReadout(now, true);
+
+  // el fondo se redibuja a ~40 fps: da igual de bonito y ahorra CPU
+  if(now - lastSky > 24){
+    lastSky = now;
+    drawSky(now);
+  }
   requestAnimationFrame(drawLoop);
 }
 
@@ -1346,7 +1730,7 @@ function init(){
   if(loaded){
     S = loaded;
     const elapsed = Math.max(0, (Date.now() - S.lastSave) / 1000);
-    const rate = cpsNoFrenzy();        // sin frenesí: el frenesí no se cobra offline
+    const rate = cpsNoFrenzy() + autoClicks() * clickMult();  // sin frenesí: no se cobra offline
     if(elapsed > 60 && rate > 0){
       const gain = Math.min(rate * elapsed, rate * MAX_TICK);
       S.cookies += gain; S.total += gain; S.everTotal += gain;
@@ -1359,6 +1743,14 @@ function init(){
   refreshAll();
   syncModeButtons();
   resizeSky();
+  measureArena();
+  updateCursors(0, performance.now());
+
+  /* si cambia el tamaño del escenario (o se gira el móvil) se recalculan
+     las medidas del coche y de los cursores */
+  if(window.ResizeObserver){
+    new ResizeObserver(()=>measureArena()).observe(arena);
+  }
 
   if(backMsg) openBackModal(backMsg);
 
@@ -1368,6 +1760,14 @@ function init(){
 
   setInterval(tick, 100);
   requestAnimationFrame(drawLoop);
+
+  /* Enganche de depuración: no cambia nada del juego, pero permite mirar
+     el estado desde la consola (RC.state) o forzar fotogramas en tests. */
+  window.RC = {
+    get state(){ return S; },
+    tick, drawLoop,
+    frame(now){ updateCursors(0.016, now || performance.now()); }
+  };
 }
 init();
 

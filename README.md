@@ -21,7 +21,12 @@ En línea: <https://byilias29-max.github.io/roadster-clicker/>
 | Mecánica | Detalle |
 |---|---|
 | **Clic en el coche** | Cada pulsación da cookies. El Roadster rebota, tiembla la pantalla, escupe llamas y las ruedas giran. |
-| **18 mejoras** | Tres ramas: producción (`Cargador` → `Singularidad`), potencia de clic (`Botón de arranque` → `Modo cohete`) y galleta dorada. |
+| **22 mejoras** | Cuatro ramas: producción (`Cargador` → `Singularidad`), **cursores automáticos** (`Cursor de Tesla` → `Ejército de cursores`), potencia de clic (`Botón de arranque` → `Modo cohete`) y galleta dorada. |
+| **Cursores automáticos** | Son punteros con el **logo de Tesla** que se mueven por la pantalla y pulsan el coche solos. Cada clic automático vale lo mismo que tu clic: el juego avanza sin que toques nada. |
+| **Cada mejora enseña lo suyo** | La fila muestra únicamente lo que aporta *esa* mejora (no la suma de todas) y, encima del precio, **lo que da la compra pendiente** (`+0,1 cookies/s`, `+0,5 clic/s`, `x2 al clic`…) en grande y con color. |
+| **Dopamina al comprar** | La fila destella, el precio se ilumina, sale una **onda expansiva**, flota el texto de lo que has ganado y suena un tintineo de monedas. |
+| **El dinero tiene valor** | El contador grande muestra las cookies y su equivalencia en euros (`≈ 12,34 €`), con rebote suave al subir. |
+| **Barra de progreso** | En la parte inferior ves la siguiente mejora que te falta y cuánto llevas (`268 / 400`). |
 | **Compra x1 / x10 / MÁX** | El precio sube ×1,15 por cada unidad comprada. |
 | **Galleta dorada** | Aparece sola cada ~1 min. 50 % de probabilidad de **frenesí x7** (15 s), 50 % de un montón de cookies. Dura 12 s y se va sola. Se puede coger con el ratón, con el dedo o con el teclado (Intro / Espacio). |
 | **12 logros** | Con aviso emergente y panel propio. |
@@ -49,16 +54,24 @@ En línea: <https://byilias29-max.github.io/roadster-clicker/>
 
 - El Roadster es **SVG inline** (carrocería, cristal, alerón, faros y ruedas de radios). Las ruedas
   giran según la producción y el escape escupe llamas al pulsar.
-- El fondo es un **canvas** con campo de estrellas y resplandor rojo del taller. Los degradados
-  se cachean y solo se rehacen al redimensionar la ventana.
-- La lógica corre con `setInterval` (100 ms), no con `requestAnimationFrame`, para que la producción
-  siga activa con la pestaña en segundo plano. El `rAF` solo dibuja el cielo.
+- El fondo es un **canvas**: noche de asfalto con una **autopista en perspectiva** que viene hacia
+  el jugador, auroras de color vivo (rojo Tesla y cian) y estrellas. Los degradados se cachean y
+  solo se rehacen al redimensionar la ventana.
+- **Rendimiento**: la lógica corre con `setInterval` (100 ms), no con `requestAnimationFrame`, para que la
+  producción siga activa con la pestaña en segundo plano. El `rAF` (60 fps) solo mueve los cursores,
+  redibuja el fondo a ~40 fps y actualiza el contador. El DOM solo se escribe **cuando el texto
+  cambia**, los cursores se mueven con `transform` (GPU) y el pulso del clic usa la Web Animations API
+  para no provocar reflows. Coste medido: ~0,004 ms por frame y ~0,005 ms por tick.
+- **Cursor personalizado**: puntero con el logo de Tesla (SVG en `data:`), aplicado a todo lo interactivo.
+- Las medidas del escenario y del coche se cachean y se recalculan con un `ResizeObserver`
+  (no `getBoundingClientRect` en cada frame).
 - El tiempo se mide con el reloj real (`Date.now()`), no con el contador de frames: si el navegador
   estrangula una pestaña oculta, la producción sigue contando (tope de 8 h, igual que el offline).
 - La producción offline se cobra **sin frenesí** y el frenesí no sobrevive a la recarga.
 - Layout responsive: en móvil la tienda baja debajo del escenario y ambos hacen scroll propio.
 - Accesible: navegación completa por teclado, foco visible, el modal es un diálogo real
-  (Escape lo cierra) y se puede hacer zoom en el navegador.
+  (Escape lo cierra), se puede hacer zoom y con `prefers-reduced-motion` las animaciones se calmán.
+- `window.RC` es un enganche de depuración (estado y funciones forzadas) para tests; no afecta al juego.
 
 ## Despliegue
 
