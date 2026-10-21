@@ -21,6 +21,9 @@ En línea: <https://byilias29-max.github.io/roadster-clicker/>
 | Mecánica | Detalle |
 |---|---|
 | **Clic en el coche** | Cada pulsación da cookies. El Roadster rebota, tiembla la pantalla, escupe llamas y las ruedas giran. |
+| **Ruleta de la fortuna 🎡** | Aparece sola cada 2-4 min. Gira con frenada real (5 vueltas), va sonando por cada sector que pasa y cae en un premio: **cookies**, **frenesí x7**, **cookies x2 durante 20 s**, **una mejora gratis**, **+1 crédito espacial** o **JACKPOT** (150× la producción + frenesí). Cae confeti y suena la victoria. |
+| **Combo de clics** | Si pulsas en ráfaga, el clic sube hasta **x2** (5 % por clic, tope de 20) y se ve en la barra inferior con la barrita que se vacía. El sonido del clic sube de tono con el combo. |
+| **Hitos** | Al cruzar 1.000, 10.000, 100.000, 1 M… cookies salta un cartel de celebración con confeti. |
 | **22 mejoras** | Cuatro ramas: producción (`Cargador` → `Singularidad`), **cursores automáticos** (`Cursor de Tesla` → `Ejército de cursores`), potencia de clic (`Botón de arranque` → `Modo cohete`) y galleta dorada. |
 | **Cursores automáticos** | Son punteros con el **logo de Tesla** que se mueven por la pantalla y pulsan el coche solos. Cada clic automático vale lo mismo que tu clic: el juego avanza sin que toques nada. |
 | **Cada mejora enseña lo suyo** | La fila muestra únicamente lo que aporta *esa* mejora (no la suma de todas) y, encima del precio, **lo que da la compra pendiente** (`+0,1 cookies/s`, `+0,5 clic/s`, `x2 al clic`…) en grande y con color. |
@@ -61,10 +64,12 @@ En línea: <https://byilias29-max.github.io/roadster-clicker/>
   exactamente un periodo, así que el bucle **no produce ningún salto**.
   Los degradados se cachean y solo se rehacen al redimensionar la ventana.
 - **Rendimiento**: la lógica corre con `setInterval` (100 ms), no con `requestAnimationFrame`, para que la
-  producción siga activa con la pestaña en segundo plano. El `rAF` (60 fps) solo mueve los cursores,
-  redibuja el fondo a ~40 fps y actualiza el contador. El DOM solo se escribe **cuando el texto
+  producción siga activa con la pestaña en segundo plano. El `rAF` (60 fps) mueve los cursores, gira la
+  ruleta, redibuja el fondo a ~40 fps y actualiza el contador. El DOM solo se escribe **cuando el texto
   cambia**, los cursores se mueven con `transform` (GPU) y el pulso del clic usa la Web Animations API
-  para no provocar reflows. Coste medido: ~0,004 ms por frame y ~0,005 ms por tick.
+  para no provocar reflows. Coste medido: ~0,011 ms por frame y ~0,007 ms por tick.
+- La ruleta gira **en el bucle de render** (no con una transición CSS) para poder sonar cada vez que pasa
+  por un sector y frenarla con una curva propia.
 - **Cursor personalizado**: puntero con el logo de Tesla (SVG en `data:`), aplicado a todo lo interactivo.
 - Las medidas del escenario y del coche se cachean y se recalculan con un `ResizeObserver`
   (no `getBoundingClientRect` en cada frame).

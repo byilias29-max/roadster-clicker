@@ -245,6 +245,62 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 .foot button:active{transform:scale(.97)}
 .foot button.danger:hover{color:#ff8a80;border-color:#ff8a8055}
 
+/* ---------- ruleta de la fortuna ---------- */
+#roulette{position:fixed;inset:0;z-index:35;display:none;align-items:center;justify-content:center;padding:16px;
+  background:radial-gradient(ellipse at 50% 40%,rgba(60,20,30,.72),rgba(3,5,10,.95) 70%);
+  backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+#roulette.on{display:flex}
+.wheelwrap{width:min(430px,94vw);text-align:center;
+  background:rgba(16,20,30,.92);border:1px solid var(--line);border-radius:22px;padding:22px 20px 20px;
+  box-shadow:0 30px 90px #000d,0 0 0 1px #ffffff0d inset;
+  animation:pop .35s cubic-bezier(.2,1.4,.4,1) both}
+.wheelwrap h2{margin:0;font-size:clamp(19px,4.6vw,26px);font-style:italic;letter-spacing:1.5px;
+  background:linear-gradient(92deg,#fff,#ffd24a 55%,#ff6b3d);-webkit-background-clip:text;background-clip:text;color:transparent}
+.wheelwrap .sub{margin:4px 0 12px;font-size:12.5px;color:var(--mute)}
+.wheelbox{position:relative;width:min(260px,70vw);margin:0 auto;aspect-ratio:1}
+.wheelbox svg{width:100%;height:100%;display:block;filter:drop-shadow(0 10px 22px #000a)}
+.pointer{position:absolute;left:50%;top:-8px;transform:translateX(-50%);z-index:3;
+  width:0;height:0;border-left:11px solid transparent;border-right:11px solid transparent;
+  border-top:20px solid #ffd24a;filter:drop-shadow(0 3px 5px #000a)}
+.pointer::after{content:"";position:absolute;left:-6px;top:-20px;width:12px;height:12px;border-radius:50%;
+  background:#fff;box-shadow:0 0 10px #ffd24a}
+#prizeText{margin:14px 0 0;min-height:26px;font-size:19px;font-weight:800;font-style:italic;color:var(--gold);
+  text-shadow:0 0 18px #ffd24a66;opacity:0;transform:scale(.7);transition:opacity .3s,transform .45s cubic-bezier(.2,1.6,.4,1)}
+#prizeText.show{opacity:1;transform:scale(1)}
+.wheelwrap .btn{border:0;border-radius:13px;padding:14px 34px;font:inherit;font-size:17px;font-weight:800;
+  letter-spacing:2px;cursor:var(--cur);color:#fff;background:linear-gradient(92deg,#e82127,#ff6b3d);
+  box-shadow:0 10px 26px #e8212755;margin-top:14px}
+.wheelwrap .btn:disabled{opacity:.5;cursor:default;box-shadow:none}
+
+/* combo de clics */
+.combo{display:flex;align-items:center;gap:7px;font-weight:800;font-style:italic;color:var(--cyan);
+  opacity:0;transition:opacity .2s}
+.combo.on{opacity:1}
+.combo .cbar{width:44px;height:5px;border-radius:3px;background:#ffffff1a;overflow:hidden}
+.combo .cbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4cc9f0,#ffd24a);
+  box-shadow:0 0 8px #4cc9f0aa}
+
+/* hito alcanzado */
+.milestone{position:absolute;left:50%;top:26%;transform:translate(-50%,0) scale(.8);z-index:6;
+  background:rgba(20,24,34,.92);border:1px solid #ffd24a66;border-radius:16px;padding:14px 26px;
+  text-align:center;pointer-events:none;opacity:0;box-shadow:0 18px 50px #000a}
+.milestone b{display:block;font-size:26px;font-style:italic;font-weight:800;color:var(--gold);
+  text-shadow:0 0 22px #ffd24a88}
+.milestone span{font-size:12px;letter-spacing:2px;color:var(--mute)}
+.milestone.show{animation:msIn 2.4s cubic-bezier(.2,1.3,.4,1) forwards}
+@keyframes msIn{0%{opacity:0;transform:translate(-50%,14px) scale(.7)}
+  12%{opacity:1;transform:translate(-50%,0) scale(1.08)}
+  22%{transform:translate(-50%,0) scale(1)}
+  82%{opacity:1;transform:translate(-50%,0) scale(1)}
+  100%{opacity:0;transform:translate(-50%,-22px) scale(.94)}}
+
+/* confeti */
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:36;overflow:hidden}
+.cfti{position:absolute;width:9px;height:14px;border-radius:2px;will-change:transform,opacity;
+  animation:cft linear forwards}
+@keyframes cft{from{transform:translateY(-30px) rotate(0);opacity:1}
+  to{transform:translateY(102vh) rotate(760deg);opacity:.85}}
+
 /* ---------- toast ---------- */
 #toasts{position:fixed;left:50%;transform:translateX(-50%);top:calc(14px + var(--sat));z-index:20;
   display:flex;flex-direction:column;gap:7px;align-items:center;pointer-events:none;width:min(94vw,420px)}
@@ -479,6 +535,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
         </div>
         <div id="golden" tabindex="0" role="button"
           aria-label="Galleta dorada. Pulsa Intro o Espacio para cogerla y ganar un bonus.">🍪</div>
+        <div class="milestone" id="milestone"><b id="msVal">0</b><span id="msTxt">HITO</span></div>
       </div>
 
       <div class="panel statusbar">
@@ -486,6 +543,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
         <span class="chip" style="min-width:0;padding:6px 12px"><span class="lb">DORADAS</span><span class="val" id="hGolden">0</span></span>
         <span class="chip" style="min-width:0;padding:6px 12px"><span class="lb">TIEMPO</span><span class="val" id="hTime">0:00</span></span>
         <span class="frenzy" id="frenzyTag"></span>
+        <span class="combo" id="comboTag"><span id="comboVal">x1</span><span class="cbar"><i id="comboFill"></i></span></span>
         <span class="hint" id="hint"></span>
         <div class="prog" id="prog">
           <div class="plabel">
@@ -536,6 +594,20 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
 </div>
 
 <div id="toasts"></div>
+<div id="confetti" aria-hidden="true"></div>
+
+<div id="roulette" role="dialog" aria-modal="true" aria-labelledby="rouletteTitle">
+  <div class="wheelwrap">
+    <h2 id="rouletteTitle">🎡 RULETA DE LA FORTUNA</h2>
+    <p class="sub" id="rouletteSub">Gira la ruleta y mira qué te toca</p>
+    <div class="wheelbox">
+      <div class="pointer"></div>
+      <svg id="wheel" viewBox="0 0 200 200" role="img" aria-label="Ruleta de la suerte"></svg>
+    </div>
+    <div id="prizeText"></div>
+    <button class="btn" id="btnSpin">GIRAR</button>
+  </div>
+</div>
 
 <div class="screen" id="screenBack">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="backTitle" aria-describedby="backTxt">
@@ -655,8 +727,23 @@ const ACHIEVEMENTS = [
 const FRENZY_MULT = 7;
 const FRENZY_TIME = 15;          // segundos
 const GOLDEN_LIFE = 12;          // segundos visible la galleta dorada
+const DOUBLE_TIME = 20;          // segundos de cookies x2
 const PRESTIGE_REQ = 1000000;
 const CREDIT_BONUS = 0.02;       // +2% por crédito
+const COMBO_TIME = 1.6;          // segundos que dura el combo
+const COMBO_MAX = 20;            // clics seguidos para el multiplicador tope
+const COMBO_STEP = 0.05;         // +5% de clic por combo
+
+/* La ruleta de la fortuna */
+const WHEEL_PRIZES = [
+  {id:'cookies', label:'COOKIES', c:'#e82127'},
+  {id:'frenzy',  label:'FRENESÍ', c:'#2b3242'},
+  {id:'double',  label:'DOBLE',   c:'#1d6fa5'},
+  {id:'upgrade', label:'MEJORIA', c:'#8a6d10'},
+  {id:'credit',  label:'CRÉDITO', c:'#5c2470'},
+  {id:'jackpot', label:'JACKPOT', c:'#0f6b46'}
+];
+const MILESTONES = [1000, 10000, 100000, 1000000, 1e7, 1e8, 1e9, 1e12, 1e15, 1e18];
 
 /* ---------------------------------------------------------
    2. ESTADO
@@ -672,6 +759,7 @@ function freshState(){
     clicks: 0,
     golden: 0,
     frenzyUntil: 0,
+    doubleUntil: 0,   // cookies x2 (ruleta)
     credits: 0,        // créditos espaciales actuales
     totalCredits: 0,
     upgrades: {},      // id -> cantidad
@@ -730,6 +818,7 @@ function clickMult(){
   for(const u of UPGRADES) if(u.tipo === 'click' && S.upgrades[u.id]) m *= 2;
   m *= creditMult();
   if(frenzyOn()) m *= FRENZY_MULT;
+  if(doubleOn()) m *= 2;
   return m;
 }
 function baseCps(){
@@ -758,14 +847,31 @@ function cpsNoFrenzy(){
   return baseCps() * creditMult();
 }
 function cps(){
-  const c = cpsNoFrenzy();
-  return frenzyOn() ? c * FRENZY_MULT : c;
+  let m = 1;
+  if(frenzyOn()) m *= FRENZY_MULT;
+  if(doubleOn()) m *= 2;
+  return cpsNoFrenzy() * m;
 }
 function frenzyOn(){
   return Date.now() < S.frenzyUntil;
 }
 function frenzyLeft(){
   return Math.max(0, (S.frenzyUntil - Date.now())/1000);
+}
+function doubleOn(){
+  return Date.now() < S.doubleUntil;
+}
+function doubleLeft(){
+  return Math.max(0, (S.doubleUntil - Date.now())/1000);
+}
+/* combo: pulsaciones seguidas → más cookies por clic */
+let combo = 0, comboUntil = 0;
+function comboMult(){
+  return 1 + Math.min(combo, COMBO_MAX) * COMBO_STEP;
+}
+function bumpCombo(now){
+  combo = Math.min(COMBO_MAX + 5, combo + 1);
+  comboUntil = now + COMBO_TIME;
 }
 function goldenBonus(){
   return (S.upgrades.midas || 0) * 0.15;          // +15% de aparición por nivel
@@ -793,7 +899,6 @@ function prestigeGain(){
    5. PERSISTENCIA
    --------------------------------------------------------- */
 const NUM_FIELDS = ['cookies','total','everTotal','clicks','golden','credits','totalCredits','playTime','lastSave'];
-
 function save(){
   S.lastSave = Date.now();
   try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){}
@@ -852,6 +957,7 @@ function parseSave(obj){
   st.totalCredits = Math.max(0, Math.floor(st.totalCredits));
   st.playTime     = Math.max(0, st.playTime);
   st.frenzyUntil  = 0;                               // el frenesí no sobrevive a la carga
+  st.doubleUntil  = 0;                               // tampoco el doble de la ruleta
   st.muted        = obj.muted === true;
   st.mode         = (obj.mode === '10' || obj.mode === 'max') ? obj.mode : '1';
   if(!isFinite(st.lastSave) || st.lastSave <= 0) st.lastSave = Date.now();
@@ -930,14 +1036,19 @@ function noise(dur, vol, freq){
   }catch(e){}
 }
 const sfx = {
-  click(){ noise(.14,.20,2600); tone(120,42,.20,'sawtooth',.16); tone(880,660,.07,'square',.06); },
+  click(){ const p = 1 + Math.min(combo, COMBO_MAX) * .04;
+    noise(.14,.20,2600); tone(120*p,42,.20,'sawtooth',.16); tone(880*p,660*p,.07,'square',.06); },
   buy(){ tone(660,660,.08,'triangle',.22); tone(990,990,.12,'triangle',.20,.07); },
   cash(){ tone(1320,1320,.07,'square',.10); tone(1760,1760,.10,'square',.09,.05); tone(2640,2640,.12,'sine',.07,.10); },
   nope(){ tone(220,150,.14,'square',.12); },
   gold(){ [784,988,1175,1568].forEach((f,i)=>tone(f,f,.16,'triangle',.18,i*.07)); },
   frenzy(){ tone(300,1400,.5,'sawtooth',.14); noise(.4,.12,3200); },
   prestige(){ tone(180,1400,1.1,'sawtooth',.14); noise(.9,.16,2400); },
-  ach(){ tone(880,880,.1,'sine',.2); tone(1320,1320,.16,'sine',.18,.09); }
+  ach(){ tone(880,880,.1,'sine',.2); tone(1320,1320,.16,'sine',.18,.09); },
+  tick(){ tone(1500,1500,.035,'square',.07); },
+  spin(){ tone(200,900,1.2,'sawtooth',.10); },
+  rouletteOpen(){ tone(523,523,.12,'triangle',.18); tone(784,784,.18,'triangle',.16,.1); },
+  win(){ [523,659,784,1046,1318].forEach((f,i)=>tone(f,f,.22,'triangle',.20,i*.09)); noise(.5,.12,3000); }
 };
 
 /* ---------------------------------------------------------
@@ -1138,7 +1249,9 @@ function spawnFloater(x, y, text, small){
 }
 function clickCar(ev){
   initAudio();
-  const amount = clickMult();
+  const now = performance.now();
+  bumpCombo(now);
+  const amount = clickMult() * comboMult();
   S.cookies += amount;
   S.total += amount;
   S.everTotal += amount;
@@ -1356,7 +1469,175 @@ $('#golden').addEventListener('keydown', e => {
 });
 
 /* ---------------------------------------------------------
-   12. PRESTIGIO
+   12.b RULETA, COMBO, HITOS Y CONFETI
+   --------------------------------------------------------- */
+let wheelRot = 0, spin = null, rouletteTimer = 50, rouletteState = 'closed';
+let msShown = new Set();
+
+function buildWheel(){
+  const svg = $('#wheel');
+  const n = WHEEL_PRIZES.length, step = 360/n, R = 92, cx = 100, cy = 100;
+  let out = '';
+  for(let i = 0; i < n; i++){
+    const a0 = (i*step - 90) * Math.PI/180;
+    const a1 = ((i+1)*step - 90) * Math.PI/180;
+    const x0 = cx + R*Math.cos(a0), y0 = cy + R*Math.sin(a0);
+    const x1 = cx + R*Math.cos(a1), y1 = cy + R*Math.sin(a1);
+    const am = ((i+0.5)*step - 90) * Math.PI/180;
+    const lx = cx + R*0.60*Math.cos(am), ly = cy + R*0.60*Math.sin(am);
+    out += '<path d="M'+cx+' '+cy+' L'+x0.toFixed(2)+' '+y0.toFixed(2)+
+           ' A'+R+' '+R+' 0 0 1 '+x1.toFixed(2)+' '+y1.toFixed(2)+' Z" fill="'+WHEEL_PRIZES[i].c+'"/>';
+    out += '<text x="'+lx.toFixed(2)+'" y="'+ly.toFixed(2)+'" fill="#fff" font-size="11.5" font-weight="800"'+
+           ' font-family="Trebuchet MS, Segoe UI, sans-serif" text-anchor="middle" dominant-baseline="middle"'+
+           ' transform="rotate('+((i+0.5)*step).toFixed(1)+' '+lx.toFixed(2)+' '+ly.toFixed(2)+')">'+WHEEL_PRIZES[i].label+'</text>';
+  }
+  out += '<circle cx="100" cy="100" r="92" fill="none" stroke="#0b0e16" stroke-width="5"/>';
+  out += '<circle cx="100" cy="100" r="96" fill="none" stroke="#ffd24a" stroke-width="3" opacity=".75"/>';
+  out += '<circle cx="100" cy="100" r="15" fill="#0f1320" stroke="#ffd24a" stroke-width="3"/>';
+  out += '<text x="100" y="100" fill="#ffd24a" font-size="16" font-weight="800" text-anchor="middle" dominant-baseline="middle">T</text>';
+  svg.innerHTML = out;
+}
+function rouletteOpen(){
+  const r = $('#roulette');
+  if(r.classList.contains('on')) return;
+  rouletteState = 'ready';
+  wheelRot = 0;
+  $('#wheel').style.transform = 'rotate(0deg)';
+  $('#prizeText').classList.remove('show');
+  $('#prizeText').textContent = '';
+  $('#rouletteSub').textContent = 'Gira la ruleta y mira qué te toca';
+  const b = $('#btnSpin');
+  b.disabled = false; b.textContent = 'GIRAR';
+  r.classList.add('on');
+  sfx.rouletteOpen();
+}
+function rouletteClose(){
+  $('#roulette').classList.remove('on');
+  spin = null;
+  rouletteState = 'closed';
+  rouletteTimer = 120 + Math.random() * 120;
+}
+$('#btnSpin').addEventListener('click', () => {
+  if(rouletteState === 'ready') startSpin();
+  else if(rouletteState === 'done') rouletteClose();
+});
+function startSpin(){
+  const n = WHEEL_PRIZES.length, step = 360/n;
+  const idx = Math.floor(Math.random() * n);
+  const base = (360 - ((idx*step + step/2) % 360)) % 360;
+  let to = base + 360*5;
+  while(to < wheelRot + 360*3) to += 360;
+  spin = {from: wheelRot, to, t0: performance.now(), dur: 4200, lastSeg: -1, idx};
+  rouletteState = 'spinning';
+  $('#btnSpin').disabled = true;
+  $('#rouletteSub').textContent = 'Girando...';
+  sfx.spin();
+}
+function updateSpin(now){
+  if(!spin) return;
+  const n = WHEEL_PRIZES.length, step = 360/n;
+  const p = Math.min(1, (now - spin.t0) / spin.dur);
+  const e = 1 - Math.pow(1 - p, 4.2);
+  wheelRot = spin.from + (spin.to - spin.from) * e;
+  $('#wheel').style.transform = 'rotate(' + wheelRot.toFixed(2) + 'deg)';
+  const local = ((360 - (wheelRot % 360)) % 360);
+  const seg = Math.floor(local / step) % n;
+  if(seg !== spin.lastSeg){ spin.lastSeg = seg; sfx.tick(); }
+  if(p >= 1){
+    const idx = spin.idx;
+    spin = null;
+    const text = applyPrize(WHEEL_PRIZES[idx].id);
+    const pe = $('#prizeText');
+    pe.textContent = text;
+    pe.classList.add('show');
+    $('#rouletteSub').textContent = '¡Enhorabuena!';
+    const b = $('#btnSpin');
+    b.disabled = false; b.textContent = 'SEGUIR';
+    rouletteState = 'done';
+    sfx.win();
+    confetti(60);
+    checkAchievements();
+    refreshAll();
+  }
+}
+function applyPrize(id){
+  const income = incomePerSec();
+  const give = n => { S.cookies += n; S.total += n; S.everTotal += n; };
+  switch(id){
+    case 'frenzy': {
+      const t = FRENZY_TIME + (S.upgrades.reloj || 0) * 10;
+      S.frenzyUntil = Date.now() + t * 1000;
+      unlockAch('frenzy');
+      return '¡FRENESÍ! x' + FRENZY_MULT + ' durante ' + t + 's';
+    }
+    case 'double': {
+      S.doubleUntil = Date.now() + DOUBLE_TIME * 1000;
+      return '¡DOBLE! cookies x2 durante ' + DOUBLE_TIME + 's';
+    }
+    case 'upgrade': {
+      const pool = UPGRADES.filter(u => S.everTotal >= u.lock);
+      if(!pool.length){ const g = Math.max(200, Math.floor(income*8)); give(g); return '+' + fmt(g) + ' cookies'; }
+      const pick = pool[Math.floor(Math.random() * pool.length)];
+      S.upgrades[pick.id] = (S.upgrades[pick.id] || 0) + 1;
+      return '¡Mejora gratis! ' + pick.name;
+    }
+    case 'credit': {
+      if(S.total >= PRESTIGE_REQ || S.credits > 0){
+        S.credits += 1; S.totalCredits += 1;
+        return '¡+1 CRÉDITO ESPACIAL!';
+      }
+      const g = Math.max(500, Math.floor(income*40)); give(g);
+      return '+' + fmt(g) + ' cookies';
+    }
+    case 'jackpot': {
+      const g = Math.max(1000, Math.floor(income*150)); give(g);
+      S.frenzyUntil = Date.now() + FRENZY_TIME * 1000;
+      return '¡JACKPOT! +' + fmt(g) + ' cookies y frenesí';
+    }
+    default: {
+      const g = Math.max(200, Math.floor(income*15)); give(g);
+      return '+' + fmt(g) + ' cookies';
+    }
+  }
+}
+function confetti(n){
+  const box = $('#confetti');
+  const colors = ['#e82127','#ff6b3d','#4cc9f0','#ffd24a','#ffffff','#8ef5b0'];
+  for(let i = 0; i < n; i++){
+    const c = document.createElement('i');
+    c.className = 'cfti';
+    c.style.left = (Math.random()*100) + 'vw';
+    c.style.background = colors[i % colors.length];
+    c.style.animationDuration = (1.7 + Math.random()*1.6) + 's';
+    c.style.animationDelay = (Math.random()*0.5) + 's';
+    c.style.opacity = (0.75 + Math.random()*0.25).toFixed(2);
+    box.appendChild(c);
+    setTimeout(()=>c.remove(), 4200);
+  }
+}
+/* hitos: cuando se cruza una cifra redonda, se celebra */
+function initMilestones(){
+  msShown = new Set();
+  for(const m of MILESTONES) if(S.everTotal >= m) msShown.add(m);
+}
+function checkMilestone(){
+  for(const m of MILESTONES){
+    if(S.everTotal >= m && !msShown.has(m)){
+      msShown.add(m);
+      showMilestone(m);
+    }
+  }
+}
+function showMilestone(m){
+  const el = $('#milestone');
+  $('#msVal').textContent = fmt(m);
+  $('#msTxt').textContent = m >= 1e6 ? 'HITO ESPACIAL' : 'HITO ALCANZADO';
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  sfx.ach();
+  confetti(26);
+}
+/* ---------------------------------------------------------
+   12.c PRESTIGIO
    --------------------------------------------------------- */
 $('#btnPrestige').addEventListener('click', () => {
   const gain = prestigeGain();
@@ -1442,6 +1723,7 @@ function refreshUI(){
   setText($('#frenzyTag'), f ? '⚡ FRENESÍ x' + FRENZY_MULT + ' — ' + Math.ceil(frenzyLeft()) + 's' : '');
   if(f && !lastFrenzy) unlockAch('frenzy');
   lastFrenzy = f;
+  if(doubleOn()) setText($('#frenzyTag'), '💰 DOBLE x2 — ' + Math.ceil(doubleLeft()) + 's');
 
   const gain = prestigeGain();
   const bonusPct = Math.round(S.credits * CREDIT_BONUS * 100);
@@ -1688,6 +1970,17 @@ function tick(){
     if(goldenTimer <= 0 && !frenzyOn()) spawnGolden();
   }
 
+  // la ruleta aparece de vez en cuando (y no mientras haya otra cosa en pantalla)
+  rouletteTimer -= dt;
+  if(rouletteTimer <= 0 && !isGoldenVisible() &&
+     !$('#roulette').classList.contains('on') &&
+     !$('#launch').classList.contains('on')){
+    rouletteOpen();
+  }
+
+  // hitos
+  checkMilestone();
+
   // guardado automático
   saveAcc += dt;
   if(saveAcc > 6){ saveAcc = 0; save(); }
@@ -1707,12 +2000,29 @@ function tick(){
 let lastFrame = performance.now();
 let lastSky = 0, lastMoney = '', lastWorth = '', lastRate = '', lastBump = 0;
 const moneyEl = $('#hCookies'), worthEl = $('#hWorth'), rateEl = $('#hCps');
+function updateComboUI(now){
+  if(combo && now > comboUntil) combo = 0;
+  const cEl = $('#comboTag');
+  if(combo > 0){
+    cEl.classList.add('on');
+    setText($('#comboVal'), 'x' + comboMult().toFixed(2));
+    $('#comboFill').style.width = Math.max(0, Math.min(100, (comboUntil - now) / COMBO_TIME * 100)).toFixed(1) + '%';
+  }else{
+    cEl.classList.remove('on');
+  }
+}
 function drawLoop(now){
   const dt = Math.min(.05, (now - lastFrame) / 1000);
   lastFrame = now;
 
   // cursores automáticos
   updateCursors(dt, now);
+
+  // la ruleta gira aquí (para poder sonar cada vez que pasa por sector)
+  updateSpin(now);
+
+  // combo: se apaga solo si dejas de pulsar
+  updateComboUI(now);
 
   // el dinero: texto solo si cambia + un pequeño rebote (con tope)
   updateMoneyReadout(now, true);
@@ -1744,6 +2054,8 @@ function init(){
   }
   buildShop();
   buildAch();
+  buildWheel();
+  initMilestones();
   refreshAll();
   syncModeButtons();
   resizeSky();
@@ -1769,8 +2081,10 @@ function init(){
      el estado desde la consola (RC.state) o forzar fotogramas en tests. */
   window.RC = {
     get state(){ return S; },
+    get combo(){ return {n: combo, until: comboUntil, mult: comboMult()}; },
+    open: rouletteOpen,
     tick, drawLoop,
-    frame(now){ updateCursors(0.016, now || performance.now()); }
+    frame(now){ updateCursors(0.016, now); updateSpin(now); updateComboUI(now); updateMoneyReadout(now, true); }
   };
 }
 init();
