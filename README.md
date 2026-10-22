@@ -21,10 +21,11 @@ En línea: <https://byilias29-max.github.io/roadster-clicker/>
 | Mecánica | Detalle |
 |---|---|
 | **Clic en el coche** | Cada pulsación da cookies. El Roadster rebota, tiembla la pantalla, escupe llamas y las ruedas giran. |
+| **Números reales** | El clic vale el **25 % de lo que produces por segundo**, así que con muchas mejoras el clic da miles o millones (y no un 4Fixed). Las mejoras de clic multiplican ese valor. |
 | **Ruleta de la fortuna 🎡** | Aparece sola cada 2-4 min. Gira con frenada real (5 vueltas), va sonando por cada sector que pasa y cae en un premio: **cookies**, **frenesí x7**, **cookies x2 durante 20 s**, **una mejora gratis**, **+1 crédito espacial** o **JACKPOT** (150× la producción + frenesí). Cae confeti y suena la victoria. |
 | **Combo de clics** | Si pulsas en ráfaga, el clic sube hasta **x2** (5 % por clic, tope de 20) y se ve en la barra inferior con la barrita que se vacía. El sonido del clic sube de tono con el combo. |
-| **Hitos** | Al cruzar 1.000, 10.000, 100.000, 1 M… cookies salta un cartel de celebración con confeti. |
-| **22 mejoras** | Cuatro ramas: producción (`Cargador` → `Singularidad`), **cursores automáticos** (`Cursor de Tesla` → `Ejército de cursores`), potencia de clic (`Botón de arranque` → `Modo cohete`) y galleta dorada. |
+| **25 mejoras siempre activas** | Escalera de 25 escalones (producción, cursores automáticos, potencia de clic y doradas) **intercalados**: cada uno produce ~7 veces más y se amortigua en ~25 s de producción. El precio de cada escalón sube solo un 12 %, así que siempre hay algo que comprar y nunca hay un muro. |
+| **Prestigio más rápido** | Los créditos espaciales se consiguen con `total^0,55`: 1 M → 1 crédito, 100 M → 12, 10 B → 158. |
 | **Cursores automáticos** | Son punteros con el **logo de Tesla** que se mueven por la pantalla y pulsan el coche solos. Cada clic automático vale lo mismo que tu clic: el juego avanza sin que toques nada. |
 | **Cada mejora enseña lo suyo** | La fila muestra únicamente lo que aporta *esa* mejora (no la suma de todas) y, encima del precio, **lo que da la compra pendiente** (`+0,1 cookies/s`, `+0,5 clic/s`, `x2 al clic`…) en grande y con color. |
 | **Dopamina al comprar** | La fila destella, el precio se ilumina, sale una **onda expansiva**, flota el texto de lo que has ganado y suena un tintineo de monedas. |
@@ -57,12 +58,15 @@ En línea: <https://byilias29-max.github.io/roadster-clicker/>
 
 - El Roadster es **SVG inline** (carrocería, cristal, alerón, faros y ruedas de radios). Las ruedas
   giran según la producción y el escape escupe llamas al pulsar.
-- El fondo es un **canvas**: noche oscura con estrellas que derivan en diagonal hacia abajo-izquierda
-  y auroras de color vivo (rojo Tesla y cian). Encima, dentro del escenario, hay una capa (`#bgmove`)
-  de **cuadrados con esquinas redondeadas en damasco** —los grises marcados y los negros flojos— que
-  se desliza muy lentamente en esa misma diagonal: el patrón es periódico y el desplazamiento es
-  exactamente un periodo, así que el bucle **no produce ningún salto**.
+- El fondo es un **canvas** a pantalla completa: noche oscura con estrellas que derivan en diagonal hacia
+  abajo-izquierda y auroras de color vivo (rojo Tesla y cian). Encima, dentro del escenario, hay una capa
+  (`#bgmove`) de **cuadrados con esquinas redondeadas en damasco** —los grises marcados y los negros flojos—
+  que se desliza muy lentamente en esa misma diagonal, y otra (`#bgLight`) que lo ilumina con manchas de luz
+  suaves. El patrón es periódico y el desplazamiento es exactamente un periodo, así que el bucle **no produce
+  ningún salto**.
   Los degradados se cachean y solo se rehacen al redimensionar la ventana.
+- **El multiplicador de clic está acotado a x64**: si creciera sin tope, 50 niveles de mejoras de clic
+  multiplicarían la producción por 2^50 y el juego se dispararía a infinito.
 - **Rendimiento**: la lógica corre con `setInterval` (100 ms), no con `requestAnimationFrame`, para que la
   producción siga activa con la pestaña en segundo plano. El `rAF` (60 fps) mueve los cursores, gira la
   ruleta, redibuja el fondo a ~40 fps y actualiza el contador. El DOM solo se escribe **cuando el texto

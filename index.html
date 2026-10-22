@@ -40,7 +40,9 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--
   overscroll-behavior:none;user-select:none;-webkit-user-select:none}
 /* el texto se puede copiar/seleccionar donde hace falta (importar, avisos, campos) */
 input,textarea,.modal,#hint,#launch .txt{user-select:text;-webkit-user-select:text}
-#sky{position:fixed;inset:0;display:block;z-index:0}
+/* el canvas es un elemento reemplazado: con solo inset:0 se queda en su
+   tamaño intrínseco (300x150) arriba a la izquierda. Hay que darle tamaño. */
+#sky{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
 
 #app{position:relative;z-index:1;height:100%;display:flex;flex-direction:column;
   padding:calc(12px + var(--sat)) 12px calc(12px + var(--sab));
@@ -96,9 +98,20 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
    negros flojos. El patrón es periódico y el desplazamiento es exactamente
    un periodo, así que el bucle no da ningún salto. */
 #bgmove{position:absolute;left:-60px;top:-60px;right:-60px;bottom:-60px;z-index:0;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect x='0' y='0' width='40' height='40' rx='4' fill='%238b96aa' fill-opacity='.24'/%3E%3Crect x='40' y='0' width='40' height='40' rx='4' fill='%23000' fill-opacity='.55'/%3E%3Crect x='0' y='40' width='40' height='40' rx='4' fill='%23000' fill-opacity='.55'/%3E%3Crect x='40' y='40' width='40' height='40' rx='4' fill='%238b96aa' fill-opacity='.24'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Crect x='0' y='0' width='40' height='40' rx='4' fill='%238b96aa' fill-opacity='.34'/%3E%3Crect x='40' y='0' width='40' height='40' rx='4' fill='%23000' fill-opacity='.5'/%3E%3Crect x='0' y='40' width='40' height='40' rx='4' fill='%23000' fill-opacity='.5'/%3E%3Crect x='40' y='40' width='40' height='40' rx='4' fill='%238b96aa' fill-opacity='.34'/%3E%3C/svg%3E");
   background-size:80px 80px;
   animation:drift 12s linear infinite;will-change:transform}
+/* luz sutil que recorre el damasco (lo ilumina sin taparlo) */
+#bgLight{position:absolute;left:-35%;top:-35%;width:170%;height:170%;z-index:0;pointer-events:none;
+  mix-blend-mode:screen;
+  background:
+    radial-gradient(34% 34% at 32% 30%, rgba(232,33,39,.26), transparent 72%),
+    radial-gradient(28% 28% at 70% 68%, rgba(76,201,240,.22), transparent 72%),
+    radial-gradient(20% 20% at 50% 45%, rgba(255,255,255,.12), transparent 70%);
+  animation:lightdrift 22s ease-in-out infinite alternate;will-change:transform}
+@keyframes lightdrift{
+  from{transform:translate3d(-5%,4%,0) scale(1)}
+  to{transform:translate3d(6%,-5%,0) scale(1.08)}}
 @keyframes drift{
   from{transform:translate3d(0,0,0)}
   to{transform:translate3d(-40px,40px,0)}}
@@ -391,6 +404,7 @@ main{flex:1 1 auto;display:flex;gap:12px;min-height:0}
     <section class="stage">
       <div class="panel" id="arena">
         <div id="bgmove" aria-hidden="true"></div>
+        <div id="bgLight" aria-hidden="true"></div>
         <div id="floaters"></div>
         <div id="cursors" aria-hidden="true"></div>
         <div id="carHit" tabindex="0" role="button" aria-label="Pulsa el Tesla Roadster">
@@ -677,36 +691,38 @@ const SAVE_KEY = 'roadster-clicker-v1';
 /* ---------------------------------------------------------
    1. DATOS
    --------------------------------------------------------- */
+/* La escalera de mejoras: cada una cuesta ~8 veces la anterior y produce
+   ~8 veces más. Los tipos se intercalan (producción, cursores, clic, doradas)
+   para que SIEMPRE haya dos o tres cosas que comprar a la vez. */
+/* La escalera de mejoras: cada escalón produce ~7 veces más y se amortigua en
+   ~25 segundos de producción. Los tipos se intercalan (producción, cursores,
+   clic, doradas) para que SIEMPRE haya dos o tres cosas que comprar. */
 const UPGRADES = [
-  // --- producción (cps) ---
-  {id:'cargador', ico:'🔌', tipo:'cps',   name:'Cargador doméstico',  desc:'+0,1 cookies/s',   cost:15,        rate:0.1,  lock:0},
-  {id:'wall',     ico:'🏠', tipo:'cps',   name:'Wall Connector',      desc:'+1 cookie/s',       cost:110,       rate:1,    lock:50},
-  {id:'super',    ico:'⚡', tipo:'cps',   name:'Supercharger',        desc:'+8 cookies/s',      cost:1200,      rate:8,    lock:400},
-  {id:'taller',   ico:'🔧', tipo:'cps',   name:'Taller de Nevada',    desc:'+47 cookies/s',     cost:13000,     rate:47,   lock:3000},
-  {id:'giga',     ico:'🏭', tipo:'cps',   name:'Gigafactory',         desc:'+260 cookies/s',    cost:140000,    rate:260,  lock:25000},
-  {id:'flota',    ico:'🚗', tipo:'cps',   name:'Flota Model 3',       desc:'+1,4K cookies/s',   cost:1400000,   rate:1400, lock:250000},
-  {id:'cyber',    ico:'🛻', tipo:'cps',   name:'Cybertrucks robotizados', desc:'+7,8K cookies/s', cost:20000000, rate:7800, lock:3000000},
-  {id:'taxis',    ico:'🤖', tipo:'cps',   name:'Taxis autónomos',     desc:'+44K cookies/s',    cost:330000000, rate:44000,lock:50000000},
-  {id:'ciudad',   ico:'🌆', tipo:'cps',   name:'Ciudad automatizada', desc:'+260K cookies/s',   cost:5100000000,rate:260000,lock:800000000},
-  {id:'planeta',  ico:'🌍', tipo:'cps',   name:'Planeta entero',      desc:'+1,6M cookies/s',   cost:75000000000,rate:1600000,lock:12000000000},
-  {id:'singular', ico:'🌀', tipo:'cps',   name:'Singularidad',        desc:'+12M cookies/s',    cost:1000000000000,rate:12000000,lock:150000000000},
-
-  // --- cursores automáticos: pulsan el coche solos ---
-  {id:'auto1', ico:'🖱️', tipo:'cursor', name:'Cursor de Tesla',      desc:'+0,5 clic/s automático', cost:60,       rate:0.5, cursors:1, lock:20},
-  {id:'auto2', ico:'🖱️', tipo:'cursor', name:'Cursors de fibra',     desc:'+2 clics/s automáticos', cost:2500,     rate:2,   cursors:1, lock:800},
-  {id:'auto3', ico:'🤖', tipo:'cursor', name:'Flota de autopilotos', desc:'+8 clics/s automáticos', cost:120000,   rate:8,   cursors:2, lock:25000},
-  {id:'auto4', ico:'🚀', tipo:'cursor', name:'Ejército de cursores', desc:'+40 clics/s automáticos',cost:8000000,  rate:40,  cursors:3, lock:1500000},
-
-  // --- potencia de clic ---
-  {id:'boton',   ico:'🔘', tipo:'click', name:'Botón de arranque',  desc:'x2 al clic',  cost:500,        lock:100},
-  {id:'fibra',   ico:'🔑', tipo:'click', name:'Llave de fibra de carbono', desc:'x2 al clic', cost:50000, lock:8000},
-  {id:'pedal',   ico:'🦶', tipo:'click', name:'Pedal de inercia',   desc:'x2 al clic',  cost:5000000,    lock:700000},
-  {id:'rocket',  ico:'🚀', tipo:'click', name:'Modo cohete',        desc:'x2 al clic',  cost:500000000,  lock:60000000},
-
-  // --- galleta dorada ---
-  {id:'midas',   ico:'🤲', tipo:'golden', name:'Manos de Midas',     desc:'+15% de aparición de doradas', gain:'+15% doradas', cost:100000,    lock:20000},
-  {id:'reloj',   ico:'⏳', tipo:'golden', name:'Reloj de fibra',     desc:'+10s de frenesí',  gain:'+10s frenesí', cost:2000000,   lock:400000},
-  {id:'auto',    ico:'🧲', tipo:'golden', name:'Imán dorado',        desc:'+50% de tiempo visible', gain:'+50% tiempo', cost:60000000, lock:10000000}
+  {id:'cargador', ico:'🔌', tipo:'cps',   name:'Cargador doméstico',  desc:'+0,2 cookies/s',  cost:15,        rate:0.2,  lock:0},
+  {id:'wall',     ico:'🏠', tipo:'cps',   name:'Wall Connector',     desc:'+1,4 cookies/s',  cost:40,        rate:1.4,  lock:10},
+  {id:'auto1',    ico:'🖱️', tipo:'cursor', name:'Cursor de Tesla',    desc:'+0,5 clic/s',     cost:120,       rate:0.5, cursors:1, lock:30},
+  {id:'boton',    ico:'🔘', tipo:'click', name:'Botón de arranque',  desc:'x2 al clic',       cost:2000,      lock:500},
+  {id:'super',    ico:'⚡', tipo:'cps',   name:'Supercharger',       desc:'+10 cookies/s',   cost:250,       rate:10,   lock:60},
+  {id:'auto2',    ico:'🖱️', tipo:'cursor', name:'Cursors de fibra',  desc:'+2 clics/s',       cost:20000,     rate:2,   cursors:1, lock:5000},
+  {id:'taller',   ico:'🔧', tipo:'cps',   name:'Taller de Nevada',   desc:'+70 cookies/s',   cost:1800,      rate:70,   lock:450},
+  {id:'midas',    ico:'🤲', tipo:'golden', name:'Manos de Midas',    desc:'+15% de doradas',  gain:'+15% doradas', cost:400000, lock:100000},
+  {id:'giga',     ico:'🏭', tipo:'cps',   name:'Gigafactory',        desc:'+500 cookies/s',   cost:12000,     rate:500,  lock:3000},
+  {id:'cyber',    ico:'🛻', tipo:'cps',   name:'Cybertrucks robotizados', desc:'+25K cookies/s', cost:600000, rate:25000, lock:150000},
+  {id:'fibra',    ico:'🔑', tipo:'click', name:'Llave de fibra de carbono', desc:'x2 al clic', cost:8000000, lock:2000000},
+  {id:'flota',    ico:'🚗', tipo:'cps',   name:'Flota Model 3',      desc:'+3,5K cookies/s',  cost:85000,     rate:3500, lock:21000},
+  {id:'auto3',    ico:'🤖', tipo:'cursor', name:'Flota de autopilotos', desc:'+8 clics/s',    cost:15000000,  rate:8,   cursors:2, lock:3800000},
+  {id:'reloj',    ico:'⏳', tipo:'golden', name:'Reloj de fibra',    desc:'+10s de frenesí',  gain:'+10s frenesí', cost:120000000, lock:30000000},
+  {id:'taxis',    ico:'🤖', tipo:'cps',   name:'Taxis autónomos',    desc:'+170K cookies/s',  cost:4000000,   rate:170000, lock:1000000},
+  {id:'ciudad',   ico:'🌆', tipo:'cps',   name:'Ciudad automatizada', desc:'+1,2M cookies/s', cost:30000000,  rate:1200000, lock:7500000},
+  {id:'auto4',    ico:'🚀', tipo:'cursor', name:'Ejército de cursores', desc:'+40 clics/s',   cost:800000000, rate:40,  cursors:3, lock:200000000},
+  {id:'pedal',    ico:'🦶', tipo:'click', name:'Pedal de inercia',   desc:'x2 al clic',       cost:250000000, lock:62000000},
+  {id:'giga2',    ico:'⚡', tipo:'cps',   name:'Gigafactory Nevada', desc:'+8,5M cookies/s',  cost:210000000, rate:8500000, lock:52000000},
+  {id:'planeta',  ico:'🌍', tipo:'cps',   name:'Planeta entero',     desc:'+60M cookies/s',   cost:1400000000, rate:60000000, lock:350000000},
+  {id:'rocket',   ico:'🚀', tipo:'click', name:'Modo cohete',        desc:'x2 al clic',       cost:5000000000, lock:1250000000},
+  {id:'singular', ico:'🌀', tipo:'cps',   name:'Singularidad',       desc:'+400M cookies/s',  cost:10000000000, rate:400000000, lock:2500000000},
+  {id:'auto',     ico:'🧲', tipo:'golden', name:'Imán dorado',        desc:'+50% de tiempo visible', gain:'+50% tiempo', cost:30000000000, lock:7500000000},
+  {id:'orbital',  ico:'🛰️', tipo:'cps',   name:'Fabrica orbital',    desc:'+3B cookies/s',    cost:70000000000, rate:3000000000, lock:17500000000},
+  {id:'infinito', ico:'♾️', tipo:'cps',   name:'Cookies infinitas',  desc:'+20B cookies/s',   cost:500000000000, rate:20000000000, lock:125000000000}
 ];
 
 const ACHIEVEMENTS = [
@@ -780,7 +796,7 @@ let wheelAngle = 0, lastFrenzy = false;
 /* ---------------------------------------------------------
    3. NÚMEROS
    --------------------------------------------------------- */
-const UNITS = ['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc'];
+const UNITS = ['','K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td','Qad','Qid','Vg'];
 function fmt(n){
   n = Math.floor(n);
   if(!isFinite(n)) return '∞';
@@ -807,6 +823,12 @@ function fmtEUR(v){
   return fmt(v);
 }
 
+/* El clic vale una fracción de lo que produces: así los números son "reales"
+   y el coche sigue mereciendo la pena aunque tengas un montón de mejoras. */
+const CLICK_SHARE = 0.25;       // un clic = 25% de un segundo de producción
+const CLICK_MULT_CAP = 64;      // tope del multiplicador de clic (evita cadenas explosivas)
+const COST_GROWTH = 1.12;       // cada unidad encarece la siguiente un 12%
+
 /* ---------------------------------------------------------
    4. CÁLCULOS
    --------------------------------------------------------- */
@@ -814,8 +836,12 @@ function creditMult(){
   return 1 + CREDIT_BONUS * S.credits;
 }
 function clickMult(){
-  let m = 1;
-  for(const u of UPGRADES) if(u.tipo === 'click' && S.upgrades[u.id]) m *= 2;
+  /* El multiplicador de clic crece con los niveles comprados, pero ACOTADO:
+     sin el tope, 50 niveles de mejoras de clic multiplicarían la producción
+     por 2^50 y el juego se disparaba a infinito. */
+  let lv = 0;
+  for(const u of UPGRADES) if(u.tipo === 'click') lv += (S.upgrades[u.id] || 0);
+  let m = Math.min(CLICK_MULT_CAP, 1 + lv);
   m *= creditMult();
   if(frenzyOn()) m *= FRENZY_MULT;
   if(doubleOn()) m *= 2;
@@ -840,7 +866,19 @@ function visibleCursors(){
 }
 /* producción total que entra por segundo: la pasiva + la de los cursores */
 function incomePerSec(){
-  return cps() + autoClicks() * clickMult();
+  return cps() + autoClicks() * clickBase() * clickMult();
+}
+/* valor base de un clic: una fracción de la producción (mínimo 1) */
+function clickBase(){
+  return Math.max(1, cps() * CLICK_SHARE);
+}
+/* lo mismo pero sin frenesí ni doble: es lo que se cobra offline */
+function clickBaseNoFrenzy(){
+  return Math.max(1, cpsNoFrenzy() * CLICK_SHARE);
+}
+/* lo que da un clic manual ahora mismo (con el combo aplicado) */
+function clickValue(){
+  return clickBase() * clickMult() * comboMult();
 }
 /* producción con créditos pero SIN frenesí: es la que se cobra al volver (offline) */
 function cpsNoFrenzy(){
@@ -880,19 +918,19 @@ function goldenLife(){
   return GOLDEN_LIFE * (1 + (S.upgrades.auto || 0) * 0.5);  // +50% de tiempo visible por nivel
 }
 function costOf(id, n){
-  const base = U[id].cost * Math.pow(1.15, S.upgrades[id] || 0);
+  const base = U[id].cost * Math.pow(COST_GROWTH, S.upgrades[id] || 0);
   if(n <= 1) return base;
-  return base * (Math.pow(1.15, n) - 1) / 0.15;
+  return base * (Math.pow(COST_GROWTH, n) - 1) / (COST_GROWTH - 1);
 }
 function maxAffordable(id){
-  const base = U[id].cost * Math.pow(1.15, S.upgrades[id] || 0);
+  const base = U[id].cost * Math.pow(COST_GROWTH, S.upgrades[id] || 0);
   if(S.cookies < base) return 0;
-  // n tal que base*(1.15^n -1)/0.15 <= cookies
-  const n = Math.floor(Math.log(1 + 0.15 * S.cookies / base) / Math.log(1.15));
+  // n tal que base*(1.12^n -1)/0.12 <= cookies
+  const n = Math.floor(Math.log(1 + (COST_GROWTH - 1) * S.cookies / base) / Math.log(COST_GROWTH));
   return Math.max(1, n);
 }
 function prestigeGain(){
-  return Math.floor(Math.sqrt(Math.max(0, S.total) / PRESTIGE_REQ));
+  return Math.floor(Math.pow(Math.max(0, S.total) / PRESTIGE_REQ, 0.55));
 }
 
 /* ---------------------------------------------------------
@@ -1113,9 +1151,10 @@ function buildShop(){
 }
 /* Lo que DA la mejora: por unidad y lo que suma la compra pendiente (x1/x10/MÁX). */
 function gainInfo(u, n){
-  if(u.tipo === 'cps')   return {t:'+' + fmtCps((u.rate || 0) * n) + ' cookies/s', c:''};
+  const owned = S.upgrades[u.id] || 0;
+  if(u.tipo === 'cps')    return {t:'+' + fmtCps((u.rate || 0) * n) + ' cookies/s', c:''};
   if(u.tipo === 'cursor') return {t:'+' + fmtCps((u.rate || 0) * n) + ' clic/s', c:'ck'};
-  if(u.tipo === 'click')  return {t:'x' + fmt(Math.pow(2, n)) + ' al clic', c:'ck'};
+  if(u.tipo === 'click')  return {t:'x' + fmt(Math.min(CLICK_MULT_CAP, 1 + owned + n)) + ' al clic', c:'ck'};
   if(u.tipo === 'golden') return {t:(u.gain || u.desc), c:'gd'};
   return {t:u.desc, c:''};
 }
@@ -1125,7 +1164,7 @@ function ownInfo(u){
   if(!owned) return u.desc + ' por unidad';
   if(u.tipo === 'cps')    return '+' + fmtCps((u.rate || 0) * owned) + ' cookies/s · ×' + owned;
   if(u.tipo === 'cursor') return '+' + fmtCps((u.rate || 0) * owned) + ' clic/s · ×' + owned;
-  if(u.tipo === 'click')  return 'x' + fmt(Math.pow(2, owned)) + ' al clic · ×' + owned;
+  if(u.tipo === 'click')  return 'x' + fmt(Math.min(CLICK_MULT_CAP, 1 + owned)) + ' al clic · ×' + owned;
   return u.desc + ' · ×' + owned;
 }
 function refreshShop(){
@@ -1251,7 +1290,7 @@ function clickCar(ev){
   initAudio();
   const now = performance.now();
   bumpCombo(now);
-  const amount = clickMult() * comboMult();
+  const amount = clickValue();
   S.cookies += amount;
   S.total += amount;
   S.everTotal += amount;
@@ -1341,7 +1380,7 @@ function autoClick(c, now){
   }
   if(now - lastAutoFloat < 120) return;   // no saturar de números
   lastAutoFloat = now;
-  spawnFloater(c.x + 10, c.y - 8, '+' + fmt(clickMult()), true);
+  spawnFloater(c.x + 10, c.y - 8, '+' + fmt(clickBase() * clickMult()), true);
   const sp = document.createElement('div');
   sp.className = 'spark';
   sp.style.left = c.x + 'px';
@@ -1741,8 +1780,8 @@ function refreshUI(){
   const aut = autoClicks();
   if(S.cookies < 15) hint.innerHTML = 'Pulsa el <b>Roadster</b> para ganar cookies y compra tu primer <b>cargador</b>.';
   else if(gain === 0 && S.total < PRESTIGE_REQ) hint.innerHTML = 'Goal: <b>' + fmt(PRESTIGE_REQ) + '</b> cookies para el lanzamiento orbital.';
-  else if(aut > 0) hint.innerHTML = 'Pasivo <b>' + fmtCps(cps()) + '</b>/s · Cursores <b>' + fmtCps(aut) + '</b> clic/s × <b>' + fmt(clickMult()) + '</b> = <b>' + fmtCps(incomePerSec()) + '</b>/s';
-  else hint.innerHTML = 'Producción: <b>' + fmtCps(cps()) + '</b>/s · Clic: <b>' + fmt(clickMult()) + '</b>';
+  else if(aut > 0) hint.innerHTML = 'Clic: <b>' + fmt(clickValue()) + '</b> cookies · Pasivo <b>' + fmtCps(cps()) + '</b>/s · Cursores <b>' + fmtCps(aut) + '</b> clic/s';
+  else hint.innerHTML = 'Clic: <b>' + fmt(clickValue()) + '</b> cookies · Producción <b>' + fmtCps(cps()) + '</b>/s';
 
   updateProgress();
   $('#btnSound').textContent = S.muted ? '🔇' : '🔊';
@@ -1946,7 +1985,7 @@ function tick(){
     S.everTotal += c * dt;
   }
   // producción de los cursores automáticos (cada clic vale lo mismo que tu clic)
-  const auto = autoClicks() * clickMult();
+  const auto = autoClicks() * clickBase() * clickMult();
   if(auto > 0){
     S.cookies += auto * dt;
     S.total += auto * dt;
@@ -2044,7 +2083,7 @@ function init(){
   if(loaded){
     S = loaded;
     const elapsed = Math.max(0, (Date.now() - S.lastSave) / 1000);
-    const rate = cpsNoFrenzy() + autoClicks() * clickMult();  // sin frenesí: no se cobra offline
+    const rate = cpsNoFrenzy() + autoClicks() * clickBaseNoFrenzy() * clickMult();  // sin frenesí
     if(elapsed > 60 && rate > 0){
       const gain = Math.min(rate * elapsed, rate * MAX_TICK);
       S.cookies += gain; S.total += gain; S.everTotal += gain;
